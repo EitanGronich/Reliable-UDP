@@ -6,7 +6,7 @@ from ..Common.tcpserver import TCPServerSocket, TCPServerListener
 import urlparse
 from fileservice import FileService
 from dataportservice import DataPortService
-from homeservice import HomeService
+from connectionsservice import ConnectionsService
 from ..Common import constants
 import logging
 
@@ -43,7 +43,7 @@ class HTTPSocket(TCPServerSocket):
     _SERVICES = {
         None: FileService,
         "/return_port": DataPortService,
-        "/home": HomeService,
+        "/connections": ConnectionsService,
     }
 
     def __init__(
@@ -75,7 +75,7 @@ class HTTPSocket(TCPServerSocket):
             try:
                 self._service.parse_buffer(self._recv_buff)
             except Exception as e:
-                logging.info(
+                logging.error(
                     "%s: %s" % (self, traceback.format_exc())
                 )
                 if not self._service._sent:
@@ -97,7 +97,7 @@ class HTTPSocket(TCPServerSocket):
                     self._service = HTTPSocket._SERVICES[service](self, self._parsedurl)
                     self.parse_buffer()
             except Exception as e:
-                logging.info(
+                logging.error(
                     "%s: %s" % (self, traceback.format_exc())
                 )
                 self.send_error(e)

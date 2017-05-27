@@ -1,14 +1,52 @@
-body {
-  background-color: aliceblue
+.refresh-button{
+  float: right;
+  margin-bottom: 10px;
+  font-size: 1.5em;
 }
-
-h1, h2 {
+.home-page-heading{
   text-align: center;
-  font-family: Helvetica, sans-serif;
-  color: midnightblue;
+  margin-top: 100px;
 }
-
-
-tr {
-  background-color: gainsboro;
+.home-page-paragraph{
+  text-align: center;
+  margin-top: 20px;
+  font-style: italic;
+}
+.home-page-second-paragraph{
+  text-align: center;
+  margin-top: 50px;
+  font-style:italic;
+}
+.form-description{
+  font-style: italic;
+  color: gray;
+  font-size: 0.9em;
+}
+.port-info{
+  font-style: italic;
+  color: #F44336;
+}
+.table-field-description{
+  font-style: italic;
+  color: gray;
+  font-size: 0.8em;
+}
+.table-connections{
+  border-radius: 10px;
+}
+.table-data{
+  font-size: 0.9em;
+}
+.table-connections:nth-child(odd){
+  background-color: white;
+}
+.table-connections:nth-child(even){
+  background-color: #E3F2FD;
+}
+.connection-table-heading{
+  vertical-align: top;
+  background-color:#E3F2FD;
+}
+.refresh-button:hover{
+  text-decoration: none;
 }

@@ -46,22 +46,9 @@ class DataPortService(HTTPService):
             buff_limit=self._http_socket._buff_limit,
             ttl=self._qs["ttl"][0],
         )
-        self._content = (
-            """
-            <html>
-                <body>
-                    <p>
-                        Your port is: %s. Connect to this port to connect to your desired destination (%s, %s) through your chosen server (%s, %s).
-                    </p>
-                </body>
-            </html>
-        """
-        ) % (
-            dl._s.getsockname()[1],
-            self._qs["dest_address"][0],
-            self._qs["dest_port"][0],
-            self._qs["exit_address"][0],
-            self._qs["exit_port"][0],
+        self._content = constants._FORM_HTML.replace(
+            "$port$",
+            '<p class="port-info">Your port is: %s.</p>' % dl._s.getsockname()[1],
         )
         self._content_length = len(self._content)
         self._content_type = constants._CONTENT_TYPES[".html"]

@@ -83,6 +83,7 @@ class RUDPConnection(object):
         self._send_buff = ""
         self._times_retried = 0
         self._bytes_sent = 0
+        self._bytes_received = 0
         self._closing = False
         logging.info(
             "%s: Initialized" % self
@@ -120,6 +121,7 @@ class RUDPConnection(object):
 
 
     def receive_data(self, d):
+        self._bytes_received += len(d[RUDPConnection._DATA])
         self._data_socket.queue_buffer(d[RUDPConnection._DATA])
 
     def receive_ack(self, d):
@@ -268,7 +270,8 @@ class RUDPConnection(object):
                 params[RUDPConnection._DATA],
             )
         )
-        self._bytes_sent += len(datagram)
+        if params[RUDPConnection._FLAG] == RUDPConnection._FLAG_DATA:
+            self._bytes_sent += len(params[RUDPConnection._DATA])
         self._time_send_kp_alive = datetime.now() + timedelta(microseconds=self._keep_alive_interval*1000)
         logging.debug(
             "%s: Time to send keep-alive set to %s" % (self, util.present_datetime(self._time_send_kp_alive))
@@ -319,7 +322,7 @@ class RUDPConnection(object):
                 self._peer_sequence_num = d[RUDPConnection._SQN_NUM]
             else:
                 logging.info(
-                    "$s: Sequence num of received packet: %s, highest sequence num already received: %s, discarding duplicate packet"
+                    "%s: Sequence num of received packet: %s, highest sequence num already received: %s, discarding duplicate packet"
                      % (
                         self,
                         d[RUDPConnection._SQN_NUM],
