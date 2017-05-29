@@ -19,14 +19,7 @@ def check_tcp_address(address):
     return True
 
 def init_log(log, log_level):
-    logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s', level=log_level)
-    if log is not None:
-        try:
-            os.remove(log)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-        logging.basicConfig(filename=log)
+    logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s', level=log_level, filename=log)
 
 def check_tcp_port(port):
     if port < constants._MIN_PORT or port > constants._MAX_PORT:
@@ -105,5 +98,4 @@ def daemon():
             fd
         )
     os.close(fd)
-    os.chdir("/")
     signal.signal(signal.SIGHUP, signal.SIG_IGN)

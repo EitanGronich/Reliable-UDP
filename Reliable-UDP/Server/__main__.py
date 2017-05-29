@@ -1,10 +1,9 @@
 #!/usr/bin/python
-
+import logging
 import argparse
 from rudpmanager import RUDPManager
 import signal
 from ..Common import util, constants, asyncio
-import logging
 from controlserver import ControlListener
 from httpserver import HTTPListener
 

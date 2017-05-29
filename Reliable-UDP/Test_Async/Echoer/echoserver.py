@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 import traceback
-import logging
 from ...Common.tcpserver import TCPServerSocket, TCPServerListener
+import logging
+
 
 class EchoSocket(TCPServerSocket):
 

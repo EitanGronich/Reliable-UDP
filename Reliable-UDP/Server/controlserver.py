@@ -42,6 +42,7 @@ class ControlSocket(TCPServerSocket):
             block_size,
             buff_limit,
         ):
+        import logging
         super(ControlSocket, self).__init__(
             async_manager=async_manager,
             timeout=timeout,

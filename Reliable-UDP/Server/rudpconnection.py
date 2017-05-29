@@ -18,21 +18,6 @@ class RUDPConnection(object):
         _WAITING_FOR_ACK,
         _READY_FOR_SEND,
     ) = range(7)
-    _COMPONENTS = (
-        _FLAG,
-        _SQN_NUM,
-        _DATA,
-    ) = range(3)
-    _LENGTHS = {
-        _FLAG: constants._FLAG_LENGTH,
-        _SQN_NUM: constants._SQN_LENGTH,
-        _DATA: constants._DATA_LENGTH,
-    }
-    _TYPES = {
-        _FLAG: 'int',
-        _SQN_NUM: 'int',
-        _DATA: 'str',
-    }
     _FLAGS = (
         _FLAG_DATA,
         _FLAG_ACK,
@@ -46,6 +31,27 @@ class RUDPConnection(object):
         4,
         8,
     )
+    _COMPONENTS = (
+        _LENGTH,
+        _CID,
+        _FLAG,
+        _SQN_NUM,
+        _DATA,
+    ) = range(5)
+    _LENGTHS = {
+        _LENGTH: constants._LENGTH_LENGTH,
+        _CID: constants._CID_LENGTH,
+        _FLAG: constants._FLAG_LENGTH,
+        _SQN_NUM: constants._SQN_LENGTH,
+        _DATA: constants._DATA_LENGTH,
+    }
+    _TYPES = {
+        _LENGTH: 'int',
+        _CID: 'int',
+        _FLAG: 'int',
+        _SQN_NUM: 'int',
+        _DATA: 'str',
+    }
 
     def __init__(
         self,
@@ -229,15 +235,6 @@ class RUDPConnection(object):
             int(data[3]),
         )
 
-    def parse_datagram(self, datagram):
-        d = {}
-        for component in RUDPConnection._COMPONENTS:
-            d[component] = datagram[:RUDPConnection._LENGTHS[component]]
-            if RUDPConnection._TYPES[component] == "int":
-                d[component] = int(d[component], 16)
-            datagram = datagram[RUDPConnection._LENGTHS[component]:]
-        return d
-
     def queue_datagram(self, flag, sqn_num, data, retry=False):
         content = "%04x%01x%04x%s" %(
                     self._cid,
@@ -287,9 +284,9 @@ class RUDPConnection(object):
         logging.debug(
             "%s: Time to send keep-alive set to %s" % (self, util.present_datetime(self._time_send_kp_alive))
         )
-        self._last_datagram_sent = datagram, params
         flag = params[RUDPConnection._FLAG]
         if flag != RUDPConnection._FLAG_ACK:
+            self._last_datagram_sent = datagram, params
             self._time_send_retry = datetime.now() + timedelta(microseconds=self._retry_interval*1000)
             logging.debug(
                 "%s: Time to resend packet set to %s" % (self, util.present_datetime(self._time_send_retry))
@@ -304,12 +301,11 @@ class RUDPConnection(object):
                 )
             )
 
-    def receive_datagram(self, datagram):
+    def receive_datagram(self, d):
         self._time_send_kp_alive = datetime.now() + timedelta(microseconds=self._keep_alive_interval*1000)
         logging.debug(
             "%s: Time to set keep-alive set to %s" % (self, util.present_datetime(self._time_send_kp_alive))
         )
-        d = self.parse_datagram(datagram)
         logging.info(
             (
                 "%s: Datagram received: Flag: %s; Sequence number: %s; Data: %s"
@@ -322,6 +318,8 @@ class RUDPConnection(object):
         )
         if d[RUDPConnection._FLAG] == RUDPConnection._FLAG_ACK:
             self.receive_ack(d)
+        elif d[RUDPConnection._FLAG] == RUDPConnection._FLAG_INIT and self._connection_state == RUDPConnection._WAITING_FOR_INIT_ACK:
+            logging.info("%s: Received connection approval before init ack, init ack probably lost")
         else:
             duplicate = False
             if self._peer_sequence_num is None:
@@ -340,8 +338,10 @@ class RUDPConnection(object):
                         self._peer_sequence_num,
                     )
                 )
-        if d[RUDPConnection._FLAG] not in (RUDPConnection._FLAG_ACK, RUDPConnection._FLAG_CLOSE):
-            self.queue_ack()
+            if d[RUDPConnection._FLAG] not in (RUDPConnection._FLAG_ACK, RUDPConnection._FLAG_CLOSE):
+                self.queue_ack()
+            if d[RUDPConnection._FLAG] == RUDPConnection._FLAG_INIT:
+                    self.queue_ack()
 
     def connect_to_remote(self):
         logging.info(
@@ -423,14 +423,13 @@ class RUDPConnection(object):
             )
             self.init_close()
         if self._time_send_retry is not None and now >= self._time_send_retry and self._connection_state in (RUDPConnection._WAITING_FOR_ACK, RUDPConnection._WAITING_FOR_INIT_ACK):
-            if now >= self._time_send_retry:
-                if self._times_retried >= self._retry_count:
-                    logging.info(
-                        "%s: Peer not answering packets, closing connection..." % self
-                    )
-                    self.init_close(queue_close=False)
-                else:
-                    self.retry_send()
+            if self._times_retried >= self._retry_count:
+                logging.info(
+                    "%s: Peer not answering packets, closing connection..." % self
+                )
+                self.init_close(queue_close=False)
+            else:
+                self.retry_send()
         if self._connection_state == RUDPConnection._READY_FOR_SEND and self._send_buff:
             self.queue_buffer('')
 

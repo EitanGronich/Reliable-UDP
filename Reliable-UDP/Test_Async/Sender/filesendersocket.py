@@ -58,14 +58,17 @@ class FileSenderSocket(TCPServerSocket):
         if not send_buf:
             self._file_send_state = self._FINISHED
             self.init_close()
-        self.queue_buffer(send_buf)
-        self._buf_sent = send_buf
-        self._file_send_state = self._SENDING_BLOCK
+        else:
+            self.queue_buffer(send_buf)
+            self._buf_sent = send_buf
+            self._file_send_state = self._SENDING_BLOCK
 
     def receiving(self):
         return self._file_send_state == self._RECEIVING_BLOCK and super(FileSenderSocket, self).receiving()
 
     def terminate(self):
+        if self._file_send_state != self._FINISHED:
+            logging.error("%s: terminated but not finished" % self)
         os.close(self._fd)
         super(FileSenderSocket, self).terminate()
 

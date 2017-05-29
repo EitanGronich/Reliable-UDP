@@ -73,5 +73,9 @@ class OpenListeningPortSocket(TCPServerSocket):
     def receiving(self):
         return self._request_state == self._RECEIVING_PORT and super(OpenListeningPortSocket, self).receiving()
 
+    def init_close(self):
+        self._send_buff = ""
+        super(OpenListeningPortSocket, self).init_close()
+
     def __repr__(self):
         return "Listener Socket Opener Socket (%s)" % self._fileno
