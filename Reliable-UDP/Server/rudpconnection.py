@@ -94,32 +94,42 @@ class RUDPConnection(object):
             self._remote_user = self._remote_user_addr, self._remote_user_port = endpoint
 
     def receive_init(self, d):
-        initiator_address, initiator_port, endpoint_addr, endpoint_port = self.parse_init_data(d[RUDPConnection._DATA])
-        self._close_user = endpoint_addr, endpoint_port
-        self._remote_user = initiator_address, initiator_port
-        logging.info(
-            "%s: Received request to init connection with %s from RUDP server %s. Trying to connect..." % (
-                self,
-                self._close_user,
-                self._rudp_peer,
+        if self._connection_state == RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL:
+            logging.info(
+                "%s: Connection to remote user successful, allowing user at %s to send and receive" %(
+                    self,
+                    self._close_user,
+                )
             )
-        )
-        try:
-            self._data_socket = DataSocket(
-                async_manager=self._async_manager,
-                rudp_manager=self._rudp_manager,
-                timeout=constants._TIMEOUT,
-                block_size=constants._DATA_BLOCK_SIZE,
-                buff_limit=constants._DATA_BUFF_LIMIT,
-                connect_address=self._close_user,
-                connection=self,
+            self._time_give_up_connection_approval = None
+            self._connection_state = RUDPConnection._READY_FOR_SEND
+        elif self._connection_state == RUDPConnection._INIT_ANSWERER:
+            initiator_address, initiator_port, endpoint_addr, endpoint_port = self.parse_init_data(d[RUDPConnection._DATA])
+            self._close_user = endpoint_addr, endpoint_port
+            self._remote_user = initiator_address, initiator_port
+            logging.info(
+                "%s: Received request to init connection with %s from RUDP server %s. Trying to connect..." % (
+                    self,
+                    self._close_user,
+                    self._rudp_peer,
+                )
             )
-            self._connection_state = RUDPConnection._WAITING_CONNECT_STATUS
-        except IOError:
-            logging.error(
-                "%s: Failed to initalize connection:\n%s" % (self, traceback.format_exc())
-            )
-            self.init_close()
+            try:
+                self._data_socket = DataSocket(
+                    async_manager=self._async_manager,
+                    rudp_manager=self._rudp_manager,
+                    timeout=constants._TIMEOUT,
+                    block_size=constants._DATA_BLOCK_SIZE,
+                    buff_limit=constants._DATA_BUFF_LIMIT,
+                    connect_address=self._close_user,
+                    connection=self,
+                )
+                self._connection_state = RUDPConnection._WAITING_CONNECT_STATUS
+            except IOError:
+                logging.error(
+                    "%s: Failed to initalize connection:\n%s" % (self, traceback.format_exc())
+                )
+                self.init_close()
 
 
     def receive_data(self, d):
@@ -141,21 +151,13 @@ class RUDPConnection(object):
                     )
                 )
             else:
-                if self._connection_state == RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL:
-                    logging.info(
-                        "%s: Connection to remote user successful, allowing user at %s to send and receive" %(
-                            self,
-                            self._close_user,
-                        )
-                    )
-                    self._time_give_up_connection_approval = None
                 self._connection_state = RUDPConnection._READY_FOR_SEND
-                logging.debug(
-                    "%s: Incremented sequence number from %s to %s" % (self, self._sequence_num, self._sequence_num + 1)
-                )
-                self._sequence_num += 1
-                self._times_retried = 0
-                self._time_send_retry = None
+            logging.debug(
+                "%s: Incremented sequence number from %s to %s" % (self, self._sequence_num, self._sequence_num + 1)
+            )
+            self._sequence_num += 1
+            self._times_retried = 0
+            self._time_send_retry = None
 
     def receive_close(self, d):
         if self._connection_state == RUDPConnection._WAITING_FOR_INIT_ACK:
@@ -208,8 +210,11 @@ class RUDPConnection(object):
                 self._rudp_peer,
             )
         )
-        self._connection_state = RUDPConnection._READY_FOR_SEND
-        self.queue_ack()
+        self.queue_datagram(
+            flag=RUDPConnection._FLAG_INIT,
+            sqn_num=self._sequence_num,
+            data="",
+        )
 
     def parse_init_data(self, data):
         data = data.split("\n")
@@ -256,7 +261,10 @@ class RUDPConnection(object):
             params,
         )
         if flag == RUDPConnection._FLAG_INIT:
-            self._connection_state = RUDPConnection._WAITING_FOR_INIT_ACK
+            if data == "":
+                self._connection_state = RUDPConnection._WAITING_FOR_ACK
+            else:
+                self._connection_state = RUDPConnection._WAITING_FOR_INIT_ACK
         elif flag != RUDPConnection._FLAG_ACK:
             self._connection_state = RUDPConnection._WAITING_FOR_ACK
         if retry:
