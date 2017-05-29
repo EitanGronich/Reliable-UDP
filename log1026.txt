@@ -1,0 +1,8 @@
+INFO:2017-05-29 14:48:02,982:RUDP Connection Manager (4): Initialized
+INFO:2017-05-29 14:48:02,983:Control Listener Socket (6): Initialized
+INFO:2017-05-29 14:48:02,983:HTTP Listener Socket (7): Initialized
+INFO:2017-05-29 14:48:04,045:Closing RUDP server...
+INFO:2017-05-29 14:48:04,046:RUDP Connection Manager (4): Terminated
+INFO:2017-05-29 14:48:04,047:Control Listener Socket (6): Terminated
+INFO:2017-05-29 14:48:04,047:HTTP Listener Socket (7): Terminated
+INFO:2017-05-29 14:48:06,048:RUDP Server Terminated

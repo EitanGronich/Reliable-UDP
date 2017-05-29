@@ -74,7 +74,7 @@ class DataSocket(TCPServerSocket):
             self._connection = connection
 
     ##Handle buffer received.
-    # @param (string) buffer
+    # @param buf (string) buffer
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         if self._connection._connection_state not in (
@@ -107,7 +107,7 @@ class DataSocket(TCPServerSocket):
             )
         )
 
-
+    ##Terminates object completely.
     def terminate(self):
         super(DataSocket, self).terminate()
         self.close_connection()
