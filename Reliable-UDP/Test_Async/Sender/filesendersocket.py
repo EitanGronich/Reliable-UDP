@@ -1,9 +1,21 @@
+#!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Test_Async.Sender.filesendersocket
+## @file filesendersocket.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Sender.filesendersocket
+
 from ...Common.tcpserver import TCPServerSocket
 import os
 import logging
 
+## File Sender Socket
+#
+# Sends a file in blocks to a destination and expects
+# to receive the exact same things back. If not, or if
+# disconnected prematurely, raises error.
+#
 class FileSenderSocket(TCPServerSocket):
 
+    ##States of a file sender object
     _FILE_SEND_STATES = (
         _SENDING_BLOCK,
         _RECEIVING_BLOCK,
@@ -20,8 +32,11 @@ class FileSenderSocket(TCPServerSocket):
         s=None,
         connect_address=None,
     ):
+        ##Current state
         self._file_send_state = self._SENDING_BLOCK
+        ##Last buffer sent
         self._buf_sent = None
+        ##File descriptor of file to be sent
         self._fd = os.open(
             file_to_send,
             os.O_RDONLY,
@@ -72,5 +87,7 @@ class FileSenderSocket(TCPServerSocket):
         os.close(self._fd)
         super(FileSenderSocket, self).terminate()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "File Sender Socket (%s)" % self._fileno

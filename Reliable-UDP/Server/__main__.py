@@ -1,4 +1,8 @@
 #!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Server.__main__
+## @file __main__.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.__main__
+
 import logging
 import argparse
 from rudpmanager import RUDPManager
@@ -7,6 +11,9 @@ from ..Common import util, constants, asyncio
 from controlserver import ControlListener
 from httpserver import HTTPListener
 
+
+##Program argument parsing.
+# @returns (argparse.Namespace) program arguments
 def parse_args():
     """Parse program argument."""
 
@@ -61,8 +68,10 @@ def parse_args():
     args.log_level = constants._LOGGING_MAP[args.log_level]
     return args
 
+##Program main
 def __main__():
     args = parse_args()
+    print type(args)
     if args.daemon:
         util.daemon()
     util.init_log(args.log, args.log_level)

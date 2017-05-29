@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Common.util
+## @file util.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.util
+
 from datetime import datetime
 import os
 import socket
@@ -8,6 +11,9 @@ import constants
 import logging
 import signal
 
+##Checks if tcp address if proper.
+# @param address (tuple) TCP address
+# @returns (bool) True or None
 def check_tcp_address(address):
     addr, port = address
     try:
@@ -18,14 +24,24 @@ def check_tcp_address(address):
         return None
     return True
 
+## Inits log to file and file-level
+# @param log (string) log filename
+# @param log_level (int) log level numerical value
 def init_log(log, log_level):
     logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s', level=log_level, filename=log)
 
+##Checks if TCP port is proper.
+# @param port (int) port
+# @returns (bool) Boolean or None
 def check_tcp_port(port):
     if port < constants._MIN_PORT or port > constants._MAX_PORT:
         return None
     return True
 
+##Tries to convert string to int, if successful returns
+# the int, otherwise None.
+# @param i (string) string to convert
+# @returns (bool) True or None
 def str_to_int(i):
     try:
         i = int(i)
@@ -33,6 +49,10 @@ def str_to_int(i):
         return None
     return i
 
+##Tries to convert string to float, if successful returns
+# the float, otherwise None.
+# @param f (string) string to convert
+# @returns (bool) True or None
 def str_to_float(f):
     try:
         f = float(f)
@@ -40,23 +60,16 @@ def str_to_float(f):
         return None
     return f
 
+##Sends the whole given buffer in TCP protocol.
+# @param s (string) socket
+# @param buff (string) buff
 def send_all(s, buff):
     while buff:
         buff = buff[s.send(buff):]
 
-def log(fd, data):
-    os.write(
-        fd,
-        (
-            "[%s]\n"
-            "%s\n"
-            "\n"
-        ) % (
-            present_datetime(datetime.now()),
-            data,
-        )
-    )
-
+##Returns present datetime in nice format.
+# @param now (datetime) datetime
+# @returns (string) nice format
 def present_datetime(now):
     return "%s.%s.%s, %02d:%02d:%02d:%03d" % (
         now.day,
@@ -68,6 +81,11 @@ def present_datetime(now):
         now.microsecond / 1000,
     )
 
+##Smart split, if sep exists splits on first occurrence,
+#otherwise return None and whole buffer.
+# @param buffer (string) buffer
+# @param sep (string) seperator
+# @returns (tuple) split buffer or None + whole buffer.
 def split_buffer(buffer, sep):
     i = buffer.find(sep)
     if i == -1:
@@ -75,6 +93,7 @@ def split_buffer(buffer, sep):
     else:
         return (buffer[:i], buffer[(i+len(sep)):])
 
+##Turns program into a daemon.
 def daemon():
     import resource
     child = os.fork()

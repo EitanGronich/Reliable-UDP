@@ -1,62 +1,114 @@
 #!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Common.constants
+## @file constants.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.constants
+
 import logging
 
+##Map of logging level names to numerical values
 _LOGGING_MAP = {
     "debug": logging.DEBUG,
     "info": logging.INFO,
     "error": logging.ERROR,
     "critical": logging.CRITICAL,
 }
+##Keep alive interval, after this time of idle connection
+# a keep-alive will be sent
 _KEEP_ALIVE_INTERVAL = 20000 #milliseconds
+##Retry interval or RTO, after this time packets that have not been
+#acked will be retransmitted
 _RETRY_INTERVAL = 1000
+##Connection approval interval, time that initiator of connection
+#will wait for connection approval before giving up and closing connection.
 _CONNECTION_APPROVAL_INTERVAL = 10000
+##Maximum amount of retries before giving up and closing connection.
 _RETRY_COUNT = 15
+##Length in bytes of length component of RUDP packet.
 _LENGTH_LENGTH = 4
+##Length in bytes of CID component of RUDP packet.
 _CID_LENGTH = 4
+##Length in bytes of flag component of RUDP packet.
 _FLAG_LENGTH = 1
+##Length in bytes of sequence number component of RUDP packet.
 _SQN_LENGTH = 4
+##Max length in bytes of data component of RUDP packet.
 _DATA_LENGTH = 1024
-_MAX_INIT_LENGTH = 43
-_HTTP_PORT = 80
-_RUDP_PORT = 1026
-_CONTROL_PORT = 1025
-_TIMEOUT = 2000
-_HTTP_BUFF_LIMIT = 4096
-_HTTP_BLOCK_SIZE = 1024
-_CONTROL_BUFF_LIMIT = 4096
-_CONTROL_BLOCK_SIZE = 1024
-_FILE_BLOCK_SIZE = 1024
-_DATA_BUFF_LIMIT = 4096
-_DATA_BLOCK_SIZE = 1024
+##Max length of RUDP packet, calculated by other values.
 _MAX_RUDP_SIZE = _DATA_LENGTH + _SQN_LENGTH + _FLAG_LENGTH + _CID_LENGTH + _LENGTH_LENGTH
-_MAX_CONNECTIONS = 65536
+##Default HTTP port for listening to HTTP Connections
+_HTTP_PORT = 80
+##Default RUDP Port for the UDP socket
+_RUDP_PORT = 1026
+##Default Control Port for the listening to control connections
+_CONTROL_PORT = 1025
+##Default timeout of poller
+_TIMEOUT = 2000
+##Receive buff limit of HTTP socket objects
+_HTTP_BUFF_LIMIT = 4096
+##Reading block size of HTTP socket objects
+_HTTP_BLOCK_SIZE = 1024
+##Receive buff limit of Control socket objects
+_CONTROL_BUFF_LIMIT = 4096
+##Reading block size of Control socket objects
+_CONTROL_BLOCK_SIZE = 1024
+##Reading block size of files
+_FILE_BLOCK_SIZE = 1024
+##Receive buff limit of Data socket objects
+_DATA_BUFF_LIMIT = 4096
+##Reading block size of Data socket objects
+_DATA_BLOCK_SIZE = 1024
+##Max number of connections per two servers, calculated by CID length
+_MAX_CONNECTIONS = 16 ** (_CID_LENGTH)
+##Control code in reponse for success
 _CONTROL_OK = 0
+##Control code in reponse for invalid request
 _CONTROL_INVALID_REQUEST = 1
-_CONTROL_TOO_MANY_CONNECTIONS = 2
-_CONTROL_CONNECTION_NOT_EXIST = 3
+##Control code in response for connection does not exist
+#when statistics are requested for a nonexistent connection
+_CONTROL_CONNECTION_NOT_EXIST = 2
+##Line feed
 _LF = '\n'
+##Line feed encoded in 'utf-8'
 _LF_BIN = _LF.encode('utf-8')
+##Carriage return and line feed
 _CRLF = '\r\n'
+##Carriage return and line feed, encoded in 'utf-8'
 _CRLF_BIN = _CRLF.encode('utf-8')
+##HTTP Protocol signature
 _HTTP_SIGNATURE = 'HTTP/1.1'
+##Max header length in HTTP
 _MAX_HEADER_LENGTH = 4096
+##Max number of headers in HTTP
 _MAX_NUMBER_OF_HEADERS = 100
+##HTTP Internal Error code
 _HTTP_INTERNAL_ERROR = 500
+##HTTP File not found code
 _HTTP_FILE_NOT_FOUND = 404
+##HTTP "Request is OK" code
 _HTTP_OK_CODE = 200
+##HTTP "Request is OK" Message
 _HTTP_OK_MESSAGE = "OK"
+##Base directory for files
 _BASE_DIRECTORY = "."
+##Minimum Port possible in TCP
 _MIN_PORT = 0
+##Maximum Port possible in TCP
 _MAX_PORT = 65536
+##Supported content types of the HTTP server
+#Maps file extensionts to Content-Types
 _CONTENT_TYPES = {
     '.css': 'text/css',
     '.html': 'text/html',
     '.txt': 'text/plain',
     '.ico': 'image/x-icon',
 }
+##POSIX standard input
 _STD_IN = 0
+##POSIX standard output
 _STD_OUT = 1
+##POSIX standard error
 _STD_ERR = 2
+##HTML code of form page with placeholder for port number
 _FORM_HTML = """
 <html>
     <head>
@@ -120,6 +172,7 @@ _FORM_HTML = """
     </body>
 </html>
 """
+##HTML code of connections page with placeholder for table data
 _CONNECTIONS_HTML = """
 <html>
       <head>

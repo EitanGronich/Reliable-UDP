@@ -1,12 +1,24 @@
+#!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Server.statisticsrequest
+## @file statisticsrequest.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.statisticsrequest
+
 from controlrequest import ControlRequest
 import controlserver
 from ..Common import util, constants
 from rudpmanager import RUDPManager
 
+## Statistics Request
+#
+# Inherits from ControlRequest, Represents a request for statistics
+# in the control protocol.
+#
 class StatisticsRequest(ControlRequest):
 
+    ##Name of type of request
     _NAME = "statistics"
 
+    ##Headers this type of request needs to receive
     _HEADERS_IN = (
         "info",
         "rudp_address",
@@ -14,6 +26,8 @@ class StatisticsRequest(ControlRequest):
         "cid",
     )
 
+    ##Statistic info types - types of information that can
+    #be requested
     _INFO_TYPES = (
         "number_of_connections",
         "bytes_sent",
@@ -24,6 +38,7 @@ class StatisticsRequest(ControlRequest):
         "peer_sequence_number",
     )
 
+    ##Statistic info types that are connection specific
     _CONNECTION_SPECIFIC = (
         "bytes_sent",
         "bytes_received",
@@ -33,6 +48,7 @@ class StatisticsRequest(ControlRequest):
         "peer_sequence_number",
     )
 
+    ##Statistic info types that are not connection-specific
     _GENERAL = (
         "number_of_connections"
     )
@@ -98,6 +114,7 @@ class StatisticsRequest(ControlRequest):
             if cid not in self._control_socket._rudp_manager._connections_by_rudp_server[addr]:
                 raise controlserver.ControlError(code=constants._CONTROL_CONNECTION_NOT_EXIST, message="Connection Does Not Exist")
 
+    ##Dict of state to matching method
     _FUNCS = {
         ControlRequest._RECEIVE_HEADERS: ControlRequest.receive_headers,
         ControlRequest._PREPARE_RESPONSE: prepare_response,

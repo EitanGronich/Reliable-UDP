@@ -1,10 +1,17 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Test_Async.Echoer.echoserver
+## @file echoserver.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Echoer.echoserver
+
 import traceback
 from ...Common.tcpserver import TCPServerSocket, TCPServerListener
 import logging
 
-
+## Echo Socket
+#
+# Inherits from TCPServerSocket, simply echos all data
+# received.
+#
 class EchoSocket(TCPServerSocket):
 
     """
@@ -35,6 +42,11 @@ class EchoSocket(TCPServerSocket):
     def __repr__(self):
         return "Echo Socket (%s)" % self._fileno
 
+## Echo Listener Socket
+#
+# Inherits from TCPServerListener, only listens for connections and makes
+# Echo sockets.
+#
 class EchoListener(TCPServerListener):
 
     """
@@ -81,5 +93,7 @@ class EchoListener(TCPServerListener):
             if s1:
                 s1.close()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Echo Listener Socket (%s)" % self._fileno

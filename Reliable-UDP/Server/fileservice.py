@@ -1,9 +1,19 @@
+#!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Server.fileservice
+## @file fileservice.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.fileservice
+
+
 from httpservice import HTTPService
 import httpserver
 import os
 from ..Common import constants
 import errno
 
+## File Service
+#
+# HTTP Service that services static files.
+#
 class FileService(HTTPService):
 
     def __init__(self, http_socket, parsedurl):
@@ -11,9 +21,11 @@ class FileService(HTTPService):
             http_socket,
             parsedurl,
         )
+        ##File descriptor to read requested file
         self._fd = None
 
     def open(self):
+        ##Filename of requested file
         self._filename = os.path.normpath(
             os.path.join(
                 constants._BASE_DIRECTORY,
@@ -58,6 +70,7 @@ class FileService(HTTPService):
             os.close(self._fd)
         return super(FileService, self).close()
 
+    ##Dictionary of states to methods
     _FUNCS = {
         HTTPService._RECEIVE_HEADERS: HTTPService.receive_headers,
         HTTPService._OPEN: open,

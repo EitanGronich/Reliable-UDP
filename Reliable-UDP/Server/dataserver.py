@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.dataserver
+## @file dataserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.dataserver
+
 import traceback
 from ..Common import constants
 from ..Common.tcpserver import TCPServerSocket, TCPServerListener
@@ -7,13 +10,30 @@ from datetime import datetime, timedelta
 import rudpconnection
 import logging
 
+## Data Socket
+#
+# Inherits from TCPServerSocket, deals with pure data sent and received
+# from users in a connection. Gives data received from user. to Connection object
+# and data received from a Connection object to the user.
+#
 class DataSocket(TCPServerSocket):
 
     """
         Class of sockets that handle actual data
         transmitted via the connection.
     """
-
+    ##Inits DataSocket
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDP Manager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @param socket (socket) socket
+    # @param connect_address (tuple) connect address for socket
+    # @param exit_address (tuple) exit server address for connection
+    # @param dest_address (tuple) destination address for connection
+    # @param connection (RUDPConnection) RUDPConnection object
+    # @returns DataSocket object
     def __init__(
         self,
         async_manager,
@@ -35,10 +55,14 @@ class DataSocket(TCPServerSocket):
             s=socket,
             connect_address=connect_address,
         )
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
         if exit_address is not None and dest_address is not None and socket is not None:
+            ##Exit server address
             self._exit_address = exit_address
+            ##Destination address
             self._dest_address = dest_address
+            ##Connection object
             self._connection = self._rudp_manager.init_connection(
                 rudp_exit=exit_address,
                 initiator=self._s.getpeername(),
@@ -49,6 +73,8 @@ class DataSocket(TCPServerSocket):
             assert connect_address is not None and connection is not None
             self._connection = connection
 
+    ##Handle buffer received.
+    # @param (string) buffer
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         if self._connection._connection_state not in (
@@ -59,12 +85,17 @@ class DataSocket(TCPServerSocket):
             self._connection.queue_buffer(self._recv_buff)
             self._recv_buff = ""
 
+    ##Logic when connection is successful
     def approve_connection(self):
         self._connection.approve_data_socket()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Data Socket (%s)" % self._fileno
 
+    ##Returns whether or not socket is receiving.
+    # @returns (bool) receiving or not
     def receiving(self):
         return (
             len(self._recv_buff) < self._buff_limit
@@ -87,7 +118,11 @@ class DataSocket(TCPServerSocket):
         self._connection = None
 
 
-
+## Data Listener Socket
+#
+# Inherits from TCPServerListener, only listens for connections and makes
+# Data sockets. Sometimes has limited life span.
+#
 class DataListener(TCPServerListener):
 
     """
@@ -113,11 +148,15 @@ class DataListener(TCPServerListener):
             block_size=block_size,
             buff_limit=buff_limit,
         )
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
+        ##Exit server address
         self._exit_address = exit_address
+        ##Destination address
         self._dest_address = dest_address
-        self._accepted = False
+        ##Time to live of socket
         self._ttl = ttl
+        ##Datetime object of when to close the socket
         self._time_to_close = datetime.now() + timedelta(seconds=ttl)
 
     def update(self):
@@ -158,6 +197,7 @@ class DataListener(TCPServerListener):
             )
         return t
 
-
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Data Listener Socket (%s)" % self._fileno

@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.httpserver
+## @file httpserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.httpserver
+
 import traceback
 from ..Common import util
 from ..Common.tcpserver import TCPServerSocket, TCPServerListener
@@ -10,12 +13,21 @@ from connectionsservice import ConnectionsService
 from ..Common import constants
 import logging
 
+## HTTP Error
+#
+# Inherits from RuntimeError, indicates error with HTTP Protocol.
+# Could be for example 404 File not Found or 500 Internal Error.
+#
 class HTTPError(RuntimeError):
    def __init__(self, code, message, headers={}, content=''):
        super(HTTPError, self).__init__(message)
+       ##Message of HTTP Error
        self.message = message
+       ##Code of HTTP Error
        self.code = code
+       ##Headers of HTTP Error
        self.headers = headers
+       ##Content of HTTP Error
        self.content = content
 
    def code(self):
@@ -30,7 +42,11 @@ class HTTPError(RuntimeError):
    def content(self):
        return self.content
 
-
+## HTTP Socket
+#
+# Inherits from TCPServerSocket, deals with data sent and received from browsers
+# in the HTTP protocol.
+#
 class HTTPSocket(TCPServerSocket):
 
     """
@@ -40,6 +56,8 @@ class HTTPSocket(TCPServerSocket):
         for statistics.
     """
 
+    ##Dictionary of URI's to services. File uri's are not None
+    #but are incorporated into "None" category
     _SERVICES = {
         None: FileService,
         "/return_port": DataPortService,
@@ -62,9 +80,10 @@ class HTTPSocket(TCPServerSocket):
             block_size=block_size,
             buff_limit=buff_limit,
         )
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
+        ##Current service
         self._service = None
-        self._queueing = True
 
     def handle_buf_received(self, buf):
         self._recv_buff += buf
@@ -165,11 +184,16 @@ class HTTPSocket(TCPServerSocket):
             )
         self.queue_buffer(constants._CRLF_BIN)
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "HTTP Socket (%s)" % self._fileno
 
-
-
+## HTTP Listener Socket
+#
+# Inherits from TCPServerListener, only listens for connections and makes
+# HTTP sockets.
+#
 class HTTPListener(TCPServerListener):
 
     """
@@ -195,6 +219,7 @@ class HTTPListener(TCPServerListener):
             block_size=block_size,
             buff_limit=buff_limit,
         )
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
 
     def read(self):
@@ -220,5 +245,7 @@ class HTTPListener(TCPServerListener):
             if s1:
                 s1.close()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "HTTP Listener Socket (%s)" % self._fileno

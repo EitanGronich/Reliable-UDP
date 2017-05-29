@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.rudpconnection
+## @file rudpconnection.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.rudpconnection
+
 from datetime import datetime, timedelta
 from dataserver import DataSocket
 import random
@@ -8,7 +11,14 @@ from ..Common import constants
 import traceback
 import logging
 
+## RUDP Connection Object
+#
+# Represents a specific connection between a connected user and a remote
+# user through a remote server. Handles all logic in the connection,
+# incuding timers, retransmits etc.
+#
 class RUDPConnection(object):
+    ##States of an RUDP Connection
     _STATES = (
         _INIT_ANSWERER,
         _INIT_INITIATOR,
@@ -18,6 +28,7 @@ class RUDPConnection(object):
         _WAITING_FOR_ACK,
         _READY_FOR_SEND,
     ) = range(7)
+    ##Flags in RUDP Protocol
     _FLAGS = (
         _FLAG_DATA,
         _FLAG_ACK,
@@ -31,6 +42,7 @@ class RUDPConnection(object):
         4,
         8,
     )
+    ##Components of an RUDP packet
     _COMPONENTS = (
         _LENGTH,
         _CID,
@@ -38,6 +50,7 @@ class RUDPConnection(object):
         _SQN_NUM,
         _DATA,
     ) = range(5)
+    ##Map of component to length of that component
     _LENGTHS = {
         _LENGTH: constants._LENGTH_LENGTH,
         _CID: constants._CID_LENGTH,
@@ -45,6 +58,7 @@ class RUDPConnection(object):
         _SQN_NUM: constants._SQN_LENGTH,
         _DATA: constants._DATA_LENGTH,
     }
+    ##Map of component to date type of component
     _TYPES = {
         _LENGTH: 'int',
         _CID: 'int',
@@ -69,34 +83,60 @@ class RUDPConnection(object):
         endpoint=None,
     ):
         assert state in (RUDPConnection._INIT_INITIATOR, RUDPConnection._INIT_ANSWERER)
+        ##Connection state
         self._connection_state = state
+        ##Address of remote RUDP server
         self._rudp_peer = self._rudp_peer_addr, self._rudp_peer_port = rudp_peer_address
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
+        ##Async manager object (Poller)
         self._async_manager = async_manager
+        ##Sequence number of packets sent
         self._sequence_num = 0
+        ##Sequence number of packets received from peer
         self._peer_sequence_num = None
+        ##Connection ID
         self._cid = cid
+        ##Data socket object
         self._data_socket = data_socket
+        ##Retry interval (RTO) of no ack before retransmitting
         self._retry_interval = retry_interval
+        ##Retry count before giving up and closing connection
         self._retry_count = retry_count
+        ##Keep-alive interval of idle connection
+        #before sending keep-alive packet
         self._keep_alive_interval = keep_alive_interval
+        ##Connection approval interval - time to wait for connection
+        #approval before giving up and closing connection
         self._connection_approval_interval = connection_approval_interval
         if keep_alive_interval == constants._KEEP_ALIVE_INTERVAL:
             self._keep_alive_interval -= random.random() * 1000
+        ##Datetime object to send keep-alive
         self._time_send_kp_alive = None
+        ##Datetime object to retransmit packet
         self._time_send_retry = None
+        ##Datetime object to give up on connection approval
+        #and close connection
         self._time_give_up_connection_approval = None
+        ##Last non-ack datagram sent - used for retransmissions
         self._last_datagram_sent = None
+        ##Buffer to be queued as datagrams
         self._send_buff = ""
+        ##Times retrasmitted current packet
         self._times_retried = 0
+        ##Overall data bytes sent since beginning of connection
         self._bytes_sent = 0
+        ##Overall data bytes received since beginning of connection
         self._bytes_received = 0
+        ##Boolean - closing or not
         self._closing = False
         logging.info(
             "%s: Initialized" % self
         )
         if self._connection_state == RUDPConnection._INIT_INITIATOR:
+            ##Connected user, the one close to the server
             self._close_user = self._close_user_addr, self._close_user_port = initiator
+            ##Remote user, the one connected to the remote server
             self._remote_user = self._remote_user_addr, self._remote_user_port = endpoint
 
     def receive_init(self, d):
@@ -184,6 +224,7 @@ class RUDPConnection(object):
     def receive_kpalive(self, d):
         pass
 
+    ##Dict of flag type received to method
     _RECV_FUNCS = {
         _FLAG_INIT: receive_init,
         _FLAG_CLOSE: receive_close,
@@ -433,5 +474,7 @@ class RUDPConnection(object):
         if self._connection_state == RUDPConnection._READY_FOR_SEND and self._send_buff:
             self.queue_buffer('')
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Connection (%s, %s), %s" % (self._rudp_peer_addr, self._rudp_peer_port, self._cid)

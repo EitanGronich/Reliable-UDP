@@ -1,18 +1,19 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Common.asyncio AsyncIO module.
+## @file base.py Implementation of @ref Reliable-UDP.Reliable-UDP.asyncio
+
 import errno
 import os
 import select
 import traceback
 import logging
 
-STANDARD_INPUT = 0
-STANDARD_OUTPUT = 1
-STANDARD_ERROR = 2
-
-
+## Base I/O event.
+#
 class BaseEvent(object):
     if os.name != "nt":
+        ##POLLIN/POLLOUT/POLLER values in case of POSIX.
         (
             POLLIN,
             POLLOUT,
@@ -23,6 +24,7 @@ class BaseEvent(object):
             select.POLLERR,
         )
     else:
+        ##POLLIN/POLLOUT/POLLER values in case of Windows.
         (
             POLLIN,
             POLLOUT,
@@ -33,39 +35,71 @@ class BaseEvent(object):
             8,
         )
 
+    ##Init function of BaseEvent class.
+    # @returns (BaseEvent) BaseEvent object
     def __init__(self):
         pass
 
+    ##Register function of BaseEvent class.
     def register(self):
         pass
 
+    ##Poll function of BaseEvent class.
     def poll(self):
         pass
 
 from tcpserver import DisconnectError
 
+## Poll event.
+#
 class PollEvent(BaseEvent):
+
+    ##Name of class
     NAME = "poll"
 
+    ##Init function of PollEvent.
+    # @returns (PollEvent) PollEvent object
     def __init__(self):
+        ##Poller object that has built-in registration
         self._poller = select.poll()
 
+    ##Register function of PollEvent.
+    # Registers a file descriptor to the poller with a mask.
+    # @ param fd (int) fd to register
+    # @ param mask (int) mask to register with
     def register(self, fd, mask):
         self._poller.register(fd, mask)
 
+    ##Poll function.
+    # Calls system call poll and returns the output.
+    # @param timeout (int) timeout for poll system call in milliseconds
+    # @returns (list) list of 2-length tuples: fd and event.
     def poll(self, timeout):
         return self._poller.poll(timeout)
 
-
+## Select event.
+#
 class SelectEvent(BaseEvent):
     NAME = "select"
 
+    ##Init function of SelectEvent.
+    # @returns (SelectEvent) SelectEvent object
     def __init__(self):
+        ##Dictionary of file descriptors to IO masks.
         self._fds = {}
 
+    ##Register function of SelectEvent.
+    # Registers a file descriptor to the poller with a mask.
+    # @ param fd (int) fd to register
+    # @ param mask (int) mask to register with
     def register(self, fd, mask):
         self._fds[fd] = mask
 
+    ##Poll function.
+    # Implements poll with select.
+    # Calls system call select and returns the output as poll output
+    # @param timeout (int) timeout for select system call in milliseconds
+    # @returns (list) list of 2-length tuples: fd and event.
     def poll(self, timeout):
         read, write, error = [], [], []
         for fd, mask in self._fds.items():
@@ -84,31 +118,48 @@ class SelectEvent(BaseEvent):
             poller.append((fd, BaseEvent.POLLERR))
         return poller
 
+##Map of class name to class for each event type
 MAP = {
     e.NAME: e for e in BaseEvent.__subclasses__()
 }
 
+##Decides default poller type based on OS
+# @returns (string) poller type
 def default_poller_type():
     if os.name == "nt":
         return 'select'
     else:
         return 'poll'
 
-
+## Poller object.
+#
+# Holds fds and their according object and polls them.
+#
 class Poller(object):
 
+    ##Init function for Async manager (poller)
+    # @param type (Class) poller type
+    # @param timeout (int) default timeout of poller in milliseconds
+    # @returns (Poller) Poller object
     def __init__(
         self,
         type,
         timeout,
     ):
+        ##Type of poller - poll/select
         self._type = type
+        ##Dictionary of file descriptors to matching objects
         self._pollables = {}
+        ##Poll/Select default timeout
         self._timeout = timeout
 
+    ##Register a pollable object with an fd to the poller object.
+    # @param pollable (PollableObject) Pollable Object
     def register(self, pollable):
         self._pollables[pollable.fileno] = pollable
 
+    ##Main loop of program. Builds poller, updates
+    #pollables, calls on them for events etc.
     def run(self):
         while self._pollables:
             try:
@@ -146,27 +197,38 @@ class Poller(object):
                 else:
                     self.init_close()
 
+    ##Init a poller of the matching class
+    # @returns (BaseEvent) PollEvent or SelectEvent
     def init_poller(self):
         poller = self._type()
         for fd, pollable in self._pollables.items():
             poller.register(fd, pollable.get_io_mask())
         return poller
 
+    ##Updates every pollable in the record
     def update(self):
         for fd, pollable in self._pollables.items()[:]:
             pollable.update()
 
+    ##Starts clean close, moves every pollable to closing state.
     def init_close(self):
         for pollable in self._pollables.values()[:]:
             pollable.init_close()
 
+    ##Terinates completely, deletes every pollable.
     def terminate(self):
         for pollable in self._pollables.values()[:]:
             pollable.terminate()
 
+    ##Deregisters a pollable from the poller object, by
+    #file descriptor.
+    # @param fd (int) file descriptor of pollable to deregister
     def deregister(self, fd):
         del self._pollables[fd]
 
+    ##Calculates sleep time of next poll() call by
+    #calculating minimum of all sleep times wanted by pollables.
+    # @ returns (int) timeout in milliseconds
     def get_min_sleep_time(self):
         if self._pollables:
             return min(

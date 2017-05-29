@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.controlserver
+## @file controlserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.controlserver
+
+
 import traceback
 from ..Common.tcpserver import TCPServerSocket, TCPServerListener
 from connectrequest import ConnectRequest
@@ -7,18 +11,38 @@ from statisticsrequest import StatisticsRequest
 from ..Common import constants
 import logging
 
+## Control Protocol Error
+#
+# Used to alert when there is a problem with a control request.
+# Error code is sent to user.
+#
 class ControlError(RuntimeError):
+
+    ##Init Control Error
+    # @param (int) error code
+    # @param (string) error message
    def __init__(self, code, message):
        super(ControlError, self).__init__(message)
+       ##Message of error
        self.message = message
+       ##Code of error
        self.code = code
 
+    ##Returns error code
+    # @returns (int) code
    def code(self):
        return self.code
 
+    ##Returns error message
+    # @returns (string) message
    def message(self):
        return self.message
 
+## Control Socket
+#
+# Inherits from TCPServerSocket, deals with data sent and received from users in the
+# control protocol.
+#
 class ControlSocket(TCPServerSocket):
 
     """
@@ -28,11 +52,20 @@ class ControlSocket(TCPServerSocket):
         for statistics.
     """
 
+    ##Dictionary of request type names to request type classes
     _REQUEST_CLASSES = {
         "connect": ConnectRequest,
         "statistics": StatisticsRequest,
     }
 
+    ##Inits ControlSocket
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDP Manager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param socket (socket) socket
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @returns (ControlSocket) object
     def __init__(
             self,
             async_manager,
@@ -42,7 +75,6 @@ class ControlSocket(TCPServerSocket):
             block_size,
             buff_limit,
         ):
-        import logging
         super(ControlSocket, self).__init__(
             async_manager=async_manager,
             timeout=timeout,
@@ -50,13 +82,18 @@ class ControlSocket(TCPServerSocket):
             block_size=block_size,
             buff_limit=buff_limit,
         )
+        ##Current request in process
         self._current_request = None
+        ##RUDP manager object
         self._rudp_manager = rudp_manager
 
+    ##Handles buffer received.
+    # @param buf (string) buffer
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         self.parse_buffer()
 
+    ##Parses current buffer
     def parse_buffer(self):
         if self._current_request:
             try:
@@ -86,6 +123,8 @@ class ControlSocket(TCPServerSocket):
                 self._current_request = None
                 self._recv_buff = ""
 
+    ##Parses operation (op) - statistics or connect.
+    # @returns (ControlRequest) type of request
     def parse_op(self):
         i = self._recv_buff.find("\n")
         if i != -1:
@@ -99,6 +138,8 @@ class ControlSocket(TCPServerSocket):
             self._recv_buff = buf
             return ControlSocket._REQUEST_CLASSES[op]
 
+    ##Sends error code to user
+    # @param e (Exception) error
     def send_error(self, e):
         if type(e).__name__ == "ControlError":
             code = e.code
@@ -109,6 +150,9 @@ class ControlSocket(TCPServerSocket):
             headers={},
         )
 
+    ##Sends response headers to user.
+    # @param code (int) code
+    # @param headers (dict) headers
     def send_headers(self, code, headers):
         if self._current_request:
             self.queue_buffer(
@@ -123,12 +167,17 @@ class ControlSocket(TCPServerSocket):
             )
         self.queue_buffer("\n")
 
-
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Control Socket (%s)" % self._fileno
 
 
-
+## Control Listener Socket
+#
+# Inherits from TCPServerListener, only listens for connections and makes
+# Control sockets.
+#
 class ControlListener(TCPServerListener):
 
     """
@@ -137,6 +186,14 @@ class ControlListener(TCPServerListener):
         for statistics.
     """
 
+    ##Inits ControlListener
+    # @param bind_address (tuple) bind address
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDPManager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @returns (ControlListener) object
     def __init__(
         self,
         bind_address,
@@ -153,8 +210,10 @@ class ControlListener(TCPServerListener):
             block_size=block_size,
             buff_limit=buff_limit,
         )
+        ##RUDP Manager object
         self._rudp_manager = rudp_manager
 
+    ##Logic on read event. Accepts connections.
     def read(self):
         s1 = None
         try:
@@ -177,6 +236,7 @@ class ControlListener(TCPServerListener):
             )
             if s1:
                 s1.close()
-
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Control Listener Socket (%s)" % self._fileno

@@ -1,8 +1,21 @@
+#!/usr/bin/python
+
+## @package Reliable-UDP.Reliable-UDP.Test_Async.Sender.openlisteningportsocket
+# Socket that opens listening port.
+## @file openlisteningportsocket.py Implementation of @ref Reliable-UDP.Reliable-UDP.Test_Async.Sender.openlisteningportsocket
+#
+
 from ...Common.tcpserver import TCPServerSocket
 from ...Common import constants
 
+## Listening Port Opener Socket
+#
+# Socket that connects to an RUDP Server and asks for
+# a port to a certain destination through a certain remote server.
+#
 class OpenListeningPortSocket(TCPServerSocket):
 
+    ##States of a Listening Port Opener Socket
     _REQUEST_STATES = (
         _SENDING_REQUEST,
         _RECEIVING_PORT,
@@ -43,9 +56,13 @@ class OpenListeningPortSocket(TCPServerSocket):
                 listening_port_data["dest_port"],
             )
         )
+        ##Current state
         self._request_state = self._SENDING_REQUEST
+        ##Port to be received from server
         self._port = None
+        ##Function object to do once port is obtained
         self._action = action
+        ##Arguments to give the function once port is obtained
         self._args=args
 
     def handle_buf_sent(self, buf):
@@ -77,5 +94,7 @@ class OpenListeningPortSocket(TCPServerSocket):
         self._send_buff = ""
         super(OpenListeningPortSocket, self).init_close()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Listener Socket Opener Socket (%s)" % self._fileno

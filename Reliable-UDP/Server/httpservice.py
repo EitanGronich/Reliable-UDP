@@ -1,10 +1,19 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.httpservice
+## @file httpservice.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.httpservice
+
 from ..Common import util
 from ..Common import constants
 
+## General HTTP Service
+#
+# Abstract HTTPService, all HTTP Services inherit from it.
+# Includes simple state logic.
+#
 class HTTPService(object):
 
+    ##States of an HTTP Service
     _STATES = (
         _RECEIVE_HEADERS,
         _OPEN,
@@ -15,16 +24,21 @@ class HTTPService(object):
         _FINISHED,
     ) = range(7)
 
+    ##Headers the service needs to recieve (empty because
+    #it is an abstract class)
     _HEADERS_IN = (
 
     )
 
     def __init__(self, http_socket, parsedurl):
+        ##Current state
         self._state = self._RECEIVE_HEADERS
+        ##HTTP socket object
         self._http_socket = http_socket
+        ##Receive buffer
         self._buffer = ""
+        ##Boolean - has a response been sent or not
         self._sent = False
-        self._fd = None
         self._parsedurl = parsedurl
         self._headers_in = {}
         self._headers_out = {}

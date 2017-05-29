@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+## @package Reliable-UDP.Reliable-UDP.Server.rudpmanager
+## @file rudpmanager.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.rudpmanager
+
 from ..Common import asyncio
 import errno
 import random
@@ -9,6 +12,11 @@ from rudpconnection import RUDPConnection
 from ..Common import constants
 import logging
 
+## RUDP Manager
+#
+# Managers all connections of the server. Opens connections, closes connections
+# and also deals with the actual I/O of the UDP socket..
+#
 class RUDPManager(AsyncSocket):
 
     def __init__(
@@ -29,9 +37,14 @@ class RUDPManager(AsyncSocket):
             socket=s,
             timeout=timeout,
         )
+        ##Percent chance of dropping a packet
         self._random_drop = random_drop
+        ##Dictionary of remote addresses to dictionaries of CID to connection
+        #object.
         self._connections_by_rudp_server = {}
+        ##List of all connections
         self._connections = []
+        ##List of all queued datagrams waiting for send
         self._queued_datagrams = []
 
     def read(self):
@@ -245,5 +258,7 @@ class RUDPManager(AsyncSocket):
         for c in self._connections:
             c.init_close()
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "RUDP Connection Manager (%s)" % self._fileno
