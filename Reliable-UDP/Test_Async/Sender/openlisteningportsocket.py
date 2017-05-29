@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Test_Async.Sender.openlisteningportsocket
+## @package Reliable-UDP.Test_Async.Sender.openlisteningportsocket
 # Socket that opens listening port.
-## @file openlisteningportsocket.py Implementation of @ref Reliable-UDP.Reliable-UDP.Test_Async.Sender.openlisteningportsocket
+## @file openlisteningportsocket.py Implementation of @ref Reliable-UDP.Test_Async.Sender.openlisteningportsocket
 #
 
 from ...Common.tcpserver import TCPServerSocket
@@ -22,6 +22,19 @@ class OpenListeningPortSocket(TCPServerSocket):
         _FINISHED,
     ) = range(3)
 
+    ##Inits OpenListeningPortSocket
+    # @param async_manager (Poller) Poller object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @param listening_port_data (dict) Dict that includes data
+    # required to open the listening port
+    # @param action (function) Function to do after obtaining a port from
+    # the server
+    # @param args (list) args to pass to function after obtaining a port
+    # @param s (socket) socket, always None for this object
+    # @param connect_address (tuple) Address to connect to
+    # @returns (OpenListeningPortSocket) Listener Socket Opener object
     def __init__(
         self,
         async_manager,
@@ -65,10 +78,14 @@ class OpenListeningPortSocket(TCPServerSocket):
         ##Arguments to give the function once port is obtained
         self._args=args
 
+    ##Handle logic of buffer sent.
+    # @param buf (String) Buffer sent.
     def handle_buf_sent(self, buf):
         if not self._send_buff:
             self._request_state = self._RECEIVING_PORT
 
+    ##Handle logic of buffer received.
+    # @param buf (string) Buffer received.
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         END = "%s%s" % (constants._LF, constants._LF)
@@ -87,9 +104,12 @@ class OpenListeningPortSocket(TCPServerSocket):
                     self._action(self, *self._args)
                     self.init_close()
 
+    ##Return whether or not the socket is receiving.
+    # @return (bool) Receiving or not
     def receiving(self):
         return self._request_state == self._RECEIVING_PORT and super(OpenListeningPortSocket, self).receiving()
 
+    ##Start clean close of object.
     def init_close(self):
         self._send_buff = ""
         super(OpenListeningPortSocket, self).init_close()

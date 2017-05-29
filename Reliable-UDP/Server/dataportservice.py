@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.dataportservice
-## @file dataportservice.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.dataportservice
+## @package Reliable-UDP.Server.dataportservice
+## @file dataportservice.py Implementation of @ref Reliable-UDP.Server.dataportservice
 
 
 from httpservice import HTTPService

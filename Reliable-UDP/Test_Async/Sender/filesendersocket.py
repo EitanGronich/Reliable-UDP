@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Test_Async.Sender.filesendersocket
-## @file filesendersocket.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Sender.filesendersocket
+## @package Reliable-UDP.Test_Async.Sender.filesendersocket
+## @file filesendersocket.py Implementation of @ref  Reliable-UDP.Test_Async.Sender.filesendersocket
 
 from ...Common.tcpserver import TCPServerSocket
 import os
@@ -22,6 +22,15 @@ class FileSenderSocket(TCPServerSocket):
         _FINISHED,
     ) = range(3)
 
+    ##Inits FileSenderSocket
+    # @param async_manager (Poller) Poller object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @param file_to_send (string) Filename of file to send
+    # @param s (socket) socket, always None for this object
+    # @param connect_address (tuple) Address to connect to
+    # @returns (FileSenderSocket) object
     def __init__(
         self,
         async_manager,
@@ -52,10 +61,14 @@ class FileSenderSocket(TCPServerSocket):
         )
         self.queue_file_block()
 
+    ##Handle logic of buffer sent.
+    # @param buf (string) Buffer sent
     def handle_buf_sent(self, buf):
         if not self._send_buff:
             self._file_send_state = self._RECEIVING_BLOCK
 
+    ##Handle logic of buffer received.
+    # @param buf (string) Buffer received
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         if len(self._recv_buff) >= len(self._buf_sent):
@@ -68,6 +81,7 @@ class FileSenderSocket(TCPServerSocket):
             self._recv_buff = ""
             self.queue_file_block()
 
+    ##Read another block from the file and queue it.
     def queue_file_block(self):
         send_buf = os.read(self._fd, self._block_size)
         if not send_buf:
@@ -78,9 +92,12 @@ class FileSenderSocket(TCPServerSocket):
             self._buf_sent = send_buf
             self._file_send_state = self._SENDING_BLOCK
 
+    ##Return whether or not open to receiving.
+    # @return (bool) Receiving or not
     def receiving(self):
         return self._file_send_state == self._RECEIVING_BLOCK and super(FileSenderSocket, self).receiving()
 
+    ##Terminate object completely.
     def terminate(self):
         if self._file_send_state != self._FINISHED:
             logging.error("%s: terminated but not finished" % self)

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.asyncio AsyncIO module.
-## @file base.py Implementation of @ref Reliable-UDP.Reliable-UDP.asyncio
+## @package Reliable-UDP.Common.asyncio AsyncIO module.
+## @file base.py Implementation of @ref Reliable-UDP.asyncio
 
 import errno
 import os

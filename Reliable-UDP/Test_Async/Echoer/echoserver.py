@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Test_Async.Echoer.echoserver
-## @file echoserver.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Echoer.echoserver
+## @package Reliable-UDP.Test_Async.Echoer.echoserver
+## @file echoserver.py Implementation of @ref  Reliable-UDP.Test_Async.Echoer.echoserver
 
 import traceback
 from ...Common.tcpserver import TCPServerSocket, TCPServerListener
@@ -17,7 +17,15 @@ class EchoSocket(TCPServerSocket):
     """
         Class of sockets that echo everything received.
     """
-
+    ##Inits EchoSocket
+    # @param async_manager (Poller) Poller object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @param socket (socket) socket
+    # @param connect_address (tuple) Address to connect to, always None
+    # for this object
+    # @returns (EchoSocket) object
     def __init__(
         self,
         async_manager,
@@ -36,9 +44,12 @@ class EchoSocket(TCPServerSocket):
             connect_address=connect_address,
         )
 
+    ##Handle buffer received - immediately transmit back.
     def handle_buf_received(self, buf):
         self.queue_buffer(buf)
 
+    ##String representation of object.
+    # @returns (string) representation
     def __repr__(self):
         return "Echo Socket (%s)" % self._fileno
 
@@ -52,7 +63,13 @@ class EchoListener(TCPServerListener):
     """
         Class of listener sockets that accept echo connections.
     """
-
+    ##Inits EchoListener
+    # @param bind_address (tuple) bind address
+    # @param async_manager (Poller) Poller object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @returns (EchoListener) object
     def __init__(
         self,
         bind_address,
@@ -69,7 +86,7 @@ class EchoListener(TCPServerListener):
             buff_limit=buff_limit,
         )
 
-
+    ##Receive read event - accept connections and make EchoSocket.
     def read(self):
         s1 = None
         try:

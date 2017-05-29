@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.rudpconnection
-## @file rudpconnection.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.rudpconnection
+## @package Reliable-UDP.Server.rudpconnection
+## @file rudpconnection.py Implementation of @ref Reliable-UDP.Server.rudpconnection
 
 from datetime import datetime, timedelta
 from dataserver import DataSocket
@@ -67,6 +67,20 @@ class RUDPConnection(object):
         _DATA: 'str',
     }
 
+    ##Init RUDPConnection
+    # @param rudp_manager (RUDPManager) RUDP Manager object
+    # @param async_manager (Poller) Poller object
+    # @param rudp_peer_address (tuple) Exit server address
+    # @param cid (int) Connection ID
+    # @param state (int) Numerical value of starting state
+    # @param keep_alive_interval (int) Keep alive interval of connection in milliseconds
+    # @param retry_interval (int) Retry interval (RTO) of connection in milliseconds
+    # @param connection_approval_interval (int) Connection approval interval
+    # of connection in milliseconds
+    # @param retry_count (int) Max transmits before exhaustion
+    # @param data_socket (DataSocket) Data socket object of the connection
+    # @param initiator (tuple) Address of initiator user
+    # @param endpoint (tuple) Address of target user
     def __init__(
         self,
         rudp_manager,
@@ -139,6 +153,8 @@ class RUDPConnection(object):
             ##Remote user, the one connected to the remote server
             self._remote_user = self._remote_user_addr, self._remote_user_port = endpoint
 
+    ##Receive init packet and apply logic.
+    # @param d (dict) Init Packet
     def receive_init(self, d):
         if self._connection_state == RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL:
             logging.info(
@@ -177,11 +193,14 @@ class RUDPConnection(object):
                 )
                 self.init_close()
 
-
+    ##Receive data packet and apply logic.
+    # @param d (dict) Data Packet
     def receive_data(self, d):
         self._bytes_received += len(d[RUDPConnection._DATA])
         self._data_socket.queue_buffer(d[RUDPConnection._DATA])
 
+    ##Receive ACK packet and apply logic.
+    # @param d (dict) ACK Packet
     def receive_ack(self, d):
         if d[RUDPConnection._SQN_NUM] == self._sequence_num:
             if self._connection_state == RUDPConnection._WAITING_FOR_INIT_ACK:
@@ -205,6 +224,8 @@ class RUDPConnection(object):
             self._times_retried = 0
             self._time_send_retry = None
 
+    ##Receive close packet and apply logic.
+    # @param d (dict) Close Packet
     def receive_close(self, d):
         if self._connection_state == RUDPConnection._WAITING_FOR_INIT_ACK:
             logging.info(
@@ -221,6 +242,8 @@ class RUDPConnection(object):
             )
         self.init_close(queue_close=False)
 
+    ##Receive keep-alive packet and apply logic.
+    # @param d (dict) Keep-alive Packet
     def receive_kpalive(self, d):
         pass
 
@@ -233,6 +256,7 @@ class RUDPConnection(object):
         _FLAG_KPALIVE: receive_kpalive,
     }
 
+    ##Queue closing packet.
     def queue_close(self):
         self.queue_datagram(
             RUDPConnection._FLAG_CLOSE,
@@ -240,6 +264,8 @@ class RUDPConnection(object):
             "",
         )
 
+    ##Init closing sequence of connection.
+    # @param queue_close (bool) Queue closing packet or not
     def init_close(self, queue_close=True):
         self._closing = True
         if self._data_socket and not self._data_socket._closing:
@@ -249,6 +275,7 @@ class RUDPConnection(object):
             self.queue_close()
         self._rudp_manager.close_connection(self)
 
+    ##Logic when data connection to user is successful.
     def approve_data_socket(self):
         logging.info(
             "%s: Connection to user %s sucessful, completing connection process with %s" % (
@@ -263,6 +290,10 @@ class RUDPConnection(object):
             data="",
         )
 
+    ##Parse data of Init packet.
+    # @param data (string) Init data
+    # @returns (tuple) Initiator address, initiator port, endpoint address,
+    # endpoint port
     def parse_init_data(self, data):
         data = data.split("\n")
         if len(data) != 5:
@@ -276,6 +307,11 @@ class RUDPConnection(object):
             int(data[3]),
         )
 
+    #Send datagram to RUDP Manager to queue.
+    # @param flag (int) Flag of packet
+    # @param sqn_num (int) Sequence num of packet
+    # @param data (string) Data of packet
+    # @param retry (bool) Whether this is retry or not
     def queue_datagram(self, flag, sqn_num, data, retry=False):
         content = "%04x%01x%04x%s" %(
                     self._cid,
@@ -308,6 +344,9 @@ class RUDPConnection(object):
         if retry:
             self._times_retried += 1
 
+    ##Logic when datagram is sent from queue in RUDPManager.
+    # @param datagram (string) Datagram in string form
+    # @param params (dict) Parts of the datagram
     def datagram_sent(self, datagram, params):
         logging.info(
             (
@@ -342,6 +381,9 @@ class RUDPConnection(object):
                 )
             )
 
+    ##Receive packet and apply general logic before splitting
+    #into specific methods.
+    # @param d (dict) Parts of the packet.
     def receive_datagram(self, d):
         self._time_send_kp_alive = datetime.now() + timedelta(microseconds=self._keep_alive_interval*1000)
         logging.debug(
@@ -384,6 +426,7 @@ class RUDPConnection(object):
             if d[RUDPConnection._FLAG] == RUDPConnection._FLAG_INIT:
                     self.queue_ack()
 
+    ##Start the connection sequence with a remote server.
     def connect_to_remote(self):
         logging.info(
             "%s: Trying to connect to %s through %s, waiting for response" % (
@@ -408,6 +451,9 @@ class RUDPConnection(object):
             )
         )
 
+    ##Queue a TCP buffer received from user, to be sent
+    #as datagram.
+    # @param buf (string) TCP buffer
     def queue_buffer(self, buf):
         self._send_buff += buf
         self.queue_datagram(
@@ -417,6 +463,8 @@ class RUDPConnection(object):
         )
         self._send_buff = self._send_buff[constants._DATA_LENGTH:]
 
+    ##Returns preferred sleep time based on protocol timeouts.
+    # @returns (int) sleep time in milliseconds
     def get_sleep_time(self):
         t = constants._TIMEOUT
         if self._time_send_kp_alive:
@@ -430,7 +478,7 @@ class RUDPConnection(object):
             t = min(t, t_until_retry)
         return t
 
-
+    ##Queues ack packet.
     def queue_ack(self):
         self.queue_datagram(
             RUDPConnection._FLAG_ACK,
@@ -438,6 +486,7 @@ class RUDPConnection(object):
             ""
         )
 
+    ##Queues keep-alive packet.
     def queue_kp_alive(self):
         self.queue_datagram(
             RUDPConnection._FLAG_KPALIVE,
@@ -445,6 +494,7 @@ class RUDPConnection(object):
             ""
         )
 
+    ##Retry sending the last non-ack packet sent.
     def retry_send(self):
         datagram, params = self._last_datagram_sent
         self.queue_datagram(
@@ -454,6 +504,7 @@ class RUDPConnection(object):
             retry=True,
         )
 
+    ##Update protocol intervals and apply logic accordingly.
     def update(self):
         now = datetime.now()
         if self._time_send_kp_alive is not None and now >= self._time_send_kp_alive:

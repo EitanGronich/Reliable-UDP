@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.__main__
-## @file __main__.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.__main__
+## @package Reliable-UDP.Server.__main__
+## @file __main__.py Implementation of @ref Reliable-UDP.Server.__main__
 
 import logging
 import argparse
@@ -71,7 +71,6 @@ def parse_args():
 ##Program main
 def __main__():
     args = parse_args()
-    print type(args)
     if args.daemon:
         util.daemon()
     util.init_log(args.log, args.log_level)

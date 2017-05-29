@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.connectionsservice
-## @file connectionsservice.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.connectionsservice
+## @package Reliable-UDP.Server.connectionsservice
+## @file connectionsservice.py Implementation of @ref Reliable-UDP.Server.connectionsservice
 
 from httpservice import HTTPService
 from ..Common import constants

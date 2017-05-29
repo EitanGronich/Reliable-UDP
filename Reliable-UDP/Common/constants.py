@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.constants
-## @file constants.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.constants
+## @package Reliable-UDP.Common.constants
+## @file constants.py Implementation of @ref Reliable-UDP.Common.constants
 
 import logging
 

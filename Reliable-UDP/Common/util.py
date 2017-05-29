@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.util
-## @file util.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.util
+## @package Reliable-UDP.Common.util
+## @file util.py Implementation of @ref Reliable-UDP.Common.util
 
 from datetime import datetime
 import os

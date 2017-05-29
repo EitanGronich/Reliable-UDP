@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.httpservice
-## @file httpservice.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.httpservice
+## @package Reliable-UDP.Server.httpservice
+## @file httpservice.py Implementation of @ref Reliable-UDP.Server.httpservice
 
 from ..Common import util
 from ..Common import constants
@@ -30,6 +30,10 @@ class HTTPService(object):
 
     )
 
+    ##Init HTTPService
+    # @param http_socket (HTTPSocket) HTTP Socket Object
+    # @param parsedurl (urlparse.ParseResult) Parsed request URL
+    # @returns (HTTPService) HTTP Service object
     def __init__(self, http_socket, parsedurl):
         ##Current state
         self._state = self._RECEIVE_HEADERS
@@ -39,16 +43,24 @@ class HTTPService(object):
         self._buffer = ""
         ##Boolean - has a response been sent or not
         self._sent = False
+        ##Parsed url of the request
         self._parsedurl = parsedurl
+        self._buffer = ""
+        ##Dictionary of header (in) name to header value
         self._headers_in = {}
+        ##Dictionary of header (out) name to header value
         self._headers_out = {}
+        ##Content of response
         self._content = ""
 
+    ##Parse received buffer
     def parse_buffer(self, buffer):
         self._buffer += buffer
         while self._FUNCS[self._state](self):
             pass
 
+    ##Receive HTTP headers
+    # @return (bool) Received or not=(or error)
     def receive_headers(self):
         n = self._buffer.find("%s%s" %(constants._CRLF_BIN, constants._CRLF_BIN))
         if n == - 1:
@@ -71,14 +83,20 @@ class HTTPService(object):
         self._state = self._OPEN
         return True
 
+    ##Open file
+    # @return (bool) Opened or not
     def open(self):
         self._state = self._PREPARE_RESPONSE
         return True
 
+    ##Prepare response
+    # @return (bool) Response prepared or not
     def prepare_response(self):
         self._state = self._SEND_HEADERS
         return True
 
+    ##Send Headers
+    # @return (bool) Headers sent or not
     def send_headers(self):
         self._http_socket.send_headers(
             code=constants._HTTP_OK_CODE,
@@ -91,21 +109,29 @@ class HTTPService(object):
         self._sent = True
         return True
 
+    ##Send Content
+    # @return (bool) Content sent or not
     def send_content(self):
         self._http_socket.queue_buffer(self._content)
         self._state = self._CLOSE
         return True
 
+    ##Close file
+    # @return (bool) File closed or not
     def close(self):
         self._state = self._FINISHED
         return True
 
+    ##Nothing. Finished.
     def state_finished(self):
         pass
 
+    ##Return whether service is finished.
+    # @return (bool) Finished or not
     def finished(self):
         return self._state == self._FINISHED
 
+    ##Dict of states to mathing methods
     _FUNCS = {
         _RECEIVE_HEADERS: receive_headers,
         _OPEN: open,

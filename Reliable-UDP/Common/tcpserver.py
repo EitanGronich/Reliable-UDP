@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.tcpserver
-## @file tcpserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.tcpserver
+## @package Reliable-UDP.Common.tcpserver
+## @file tcpserver.py Implementation of @ref Reliable-UDP.Common.tcpserver
 
 from asyncio import BaseEvent
 import errno

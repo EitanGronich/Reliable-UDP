@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.statisticsrequest
-## @file statisticsrequest.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.statisticsrequest
+## @package Reliable-UDP.Server.statisticsrequest
+## @file statisticsrequest.py Implementation of @ref Reliable-UDP.Server.statisticsrequest
 
 from controlrequest import ControlRequest
 import controlserver
@@ -53,11 +53,16 @@ class StatisticsRequest(ControlRequest):
         "number_of_connections"
     )
 
+    ##Init StatisticsRequest
+    # @param control_socket (ControlSocket) Control Socket
+    # @returns (StatisticsRequest) StatisticsRequest object
     def __init__(self, control_socket):
         super(StatisticsRequest, self).__init__(
             control_socket
         )
 
+    ##Prepare request response.
+    ## @returns (bool) Preparation has been finished or not
     def prepare_response(self):
         self.check_headers()
         info = self._headers_in["info"]
@@ -80,6 +85,7 @@ class StatisticsRequest(ControlRequest):
                 self._headers_out["peer_sequence_number"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._peer_sequence_num
         return super(StatisticsRequest, self).prepare_response()
 
+    ##Check received headers. Raise error if invalid.
     def check_headers(self):
         if self._headers_in["info"] not in self._INFO_TYPES:
             raise controlserver.ControlError(code=constants._CONTROL_INVALID_REQUEST, message="Invalid Request")

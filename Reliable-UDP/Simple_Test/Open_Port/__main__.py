@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Simple_Test.Open_Port.__main__
-## @file __main__.py Implementation of @ref Reliable-UDP.Reliable-UDP.Simple_Test.Open_Port.__main__
+## @package Reliable-UDP.Simple_Test.Open_Port.__main__
+## @file __main__.py Implementation of @ref Reliable-UDP.Simple_Test.Open_Port.__main__
 
 import socket
 import argparse
 from ...Common import constants, util
 import os
 
+##Program argument parsing.
+# @returns (argparse.Namespace) program arguments
 def parse_args():
     """Parse program argument."""
 
@@ -53,6 +55,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+##Main program function
 def main():
     args = parse_args()
     s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)

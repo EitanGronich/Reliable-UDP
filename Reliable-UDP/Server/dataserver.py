@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.dataserver
-## @file dataserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.dataserver
+## @package Reliable-UDP.Server.dataserver
+## @file dataserver.py Implementation of @ref Reliable-UDP.Server.dataserver
 
 import traceback
 from ..Common import constants
@@ -110,9 +110,6 @@ class DataSocket(TCPServerSocket):
     ##Terminates object completely.
     def terminate(self):
         super(DataSocket, self).terminate()
-        self.close_connection()
-
-    def close_connection(self):
         if self._connection and not self._connection._closing:
             self._connection.init_close()
         self._connection = None
@@ -128,7 +125,18 @@ class DataListener(TCPServerListener):
     """
         Class of listener sockets that accept data connections.
     """
-
+    ##Inits DataListener
+    # @param bind_address (tuple) bind address
+    # @param exit_address (tuple) exit server address
+    # @param dest_address (tuple) destination user address
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDP Manager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @param ttl (int) How long in seconds the DataListener object
+    #will stay alive.
+    # @returns (DataListener) Data Listener object
     def __init__(
         self,
         bind_address,
@@ -159,11 +167,13 @@ class DataListener(TCPServerListener):
         ##Datetime object of when to close the socket
         self._time_to_close = datetime.now() + timedelta(seconds=ttl)
 
+    ##Updates DataListener. Closes if TTL has passed
     def update(self):
         if self._ttl and datetime.now() >= self._time_to_close:
             self.init_close()
         return super(DataListener, self).update()
 
+    ##Logic on read event. Accept connections and make Data Sockets.
     def read(self):
         s1 = None
         try:
@@ -189,6 +199,8 @@ class DataListener(TCPServerListener):
             if s1:
                 s1.close()
 
+    ##Returns preferred sleep time of DataListener.
+    # @returns (int) sleep time in milliseconds
     def get_sleep_time(self):
         t = constants._TIMEOUT
         if self._ttl and not self._closing:

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.controlserver
-## @file controlserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.controlserver
+## @package Reliable-UDP.Server.controlserver
+## @file controlserver.py Implementation of @ref Reliable-UDP.Server.controlserver
 
 
 import traceback
@@ -19,8 +19,8 @@ import logging
 class ControlError(RuntimeError):
 
     ##Init Control Error
-    # @param (int) error code
-    # @param (string) error message
+    # @param code (int) error code
+    # @param message (string) error message
    def __init__(self, code, message):
        super(ControlError, self).__init__(message)
        ##Message of error
@@ -213,7 +213,7 @@ class ControlListener(TCPServerListener):
         ##RUDP Manager object
         self._rudp_manager = rudp_manager
 
-    ##Logic on read event. Accepts connections.
+    ##Logic on read event. Accepts connections and creates ControlSocket.
     def read(self):
         s1 = None
         try:

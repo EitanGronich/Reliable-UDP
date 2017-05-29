@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Test_Async.Echoer.__main__
-## @file __main__.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Echoer.__main__
+## @package Reliable-UDP.Test_Async.Echoer.__main__
+## @file __main__.py Implementation of @ref  Reliable-UDP.Test_Async.Echoer.__main__
 
 
 from ...Common import asyncio, util, constants
@@ -10,6 +10,8 @@ from echoserver import EchoListener
 import signal
 import logging
 
+##Program argument parsing.
+# @returns (argparse.Namespace) program arguments
 def parse_args():
     """Parse program argument."""
 
@@ -46,6 +48,7 @@ def parse_args():
     args.log_level = constants._LOGGING_MAP[args.log_level]
     return args
 
+##Main program function
 def main():
     args = parse_args()
     util.init_log(args.log, args.log_level)

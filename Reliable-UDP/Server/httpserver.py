@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.httpserver
-## @file httpserver.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.httpserver
+## @package Reliable-UDP.Server.httpserver
+## @file httpserver.py Implementation of @ref Reliable-UDP.Server.httpserver
 
 import traceback
 from ..Common import util
@@ -19,6 +19,13 @@ import logging
 # Could be for example 404 File not Found or 500 Internal Error.
 #
 class HTTPError(RuntimeError):
+
+    ##Init HTTPError
+    # @param code (int) HTTP Error code
+    # @param message (string) HTTP Error message
+    # @param headers (dict) HTTP error headers
+    # @param content (string) HTTP error content
+    # @returns (HTTPError) HTTPError object
    def __init__(self, code, message, headers={}, content=''):
        super(HTTPError, self).__init__(message)
        ##Message of HTTP Error
@@ -30,15 +37,23 @@ class HTTPError(RuntimeError):
        ##Content of HTTP Error
        self.content = content
 
+    ##Returns error code
+    # @returns (int) HTTP Error code
    def code(self):
        return self.code
 
+    ##Returns error message
+    # @returns (string) HTTP Error message
    def message(self):
        return self.message
 
+    ##Returns error headers
+    # @returns (dict) HTTP Error headers
    def headers(self):
        return self.headers
 
+    ##Returns error content
+    # @returns (string) HTTP Error content
    def content(self):
        return self.content
 
@@ -64,6 +79,14 @@ class HTTPSocket(TCPServerSocket):
         "/connections": ConnectionsService,
     }
 
+    ##Inits HTTPSocket
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDP Manager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param socket (socket) socket
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @returns (HTTPSocket) object
     def __init__(
             self,
             async_manager,
@@ -85,10 +108,13 @@ class HTTPSocket(TCPServerSocket):
         ##Current service
         self._service = None
 
+    ##Handle buffer received (pass on to parse).
+    # @param buf (string) buffer received.
     def handle_buf_received(self, buf):
         self._recv_buff += buf
         self.parse_buffer()
 
+    ##Parse buffer received.
     def parse_buffer(self):
         if self._service:
             try:
@@ -121,6 +147,8 @@ class HTTPSocket(TCPServerSocket):
                 )
                 self.send_error(e)
 
+    ## Parse HTTP status message.
+    # @returns (bool) Status parsed or not
     def parse_status(self):
         status, self._recv_buff = util.split_buffer(self._recv_buff, constants._CRLF_BIN)
         if not status:
@@ -140,6 +168,8 @@ class HTTPSocket(TCPServerSocket):
         self._parsedurl = urlparse.urlparse(uri)
         return True
 
+    ##Send error to browser
+    # @param e (Exception) Error
     def send_error(self, e):
         if type(e).__name__ == "HTTPError":
             code = e.code
@@ -161,6 +191,12 @@ class HTTPSocket(TCPServerSocket):
         self.queue_buffer(content)
         self.init_close()
 
+    ##Send response headers to browser
+    # @param code (int) HTTP code
+    # @param message (string) HTTP message
+    # @param content_type (string) Content-Type
+    # @param content_length (int) Content-Length
+    # @param headers (dict) HTTP headers
     def send_headers(self, code, message, content_type, content_length, headers):
         self.queue_buffer(
             (
@@ -202,7 +238,14 @@ class HTTPListener(TCPServerListener):
         nice looking user interface, and also ask
         for statistics.
     """
-
+    ##Inits HTTPListener
+    # @param bind_address (tuple) bind address
+    # @param async_manager (Poller) Poller object
+    # @param rudp_manager (RUDPManager) RUDPManager object
+    # @param timeout (int) default timeout in milliseconds
+    # @param block_size (int) reading block size in bytes
+    # @param buff_limit (int) receiving buff limit in bytes
+    # @returns (HTTPListener) object
     def __init__(
         self,
         bind_address,
@@ -222,6 +265,7 @@ class HTTPListener(TCPServerListener):
         ##RUDP Manager object
         self._rudp_manager = rudp_manager
 
+    ##Logic on read event. Accepts connections and creates HTTPSockets.
     def read(self):
         s1 = None
         try:

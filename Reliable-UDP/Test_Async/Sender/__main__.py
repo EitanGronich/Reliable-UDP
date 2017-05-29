@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Test_Async.Sender.__main__
-## @file __main__.py Implementation of @ref  Reliable-UDP.Reliable-UDP.Test_Async.Sender.__main__
+## @package Reliable-UDP.Test_Async.Sender.__main__
+## @file __main__.py Implementation of @ref  Reliable-UDP.Test_Async.Sender.__main__
 
 import argparse
 from ...Common import constants, util, asyncio
@@ -10,6 +10,8 @@ from openlisteningportsocket import OpenListeningPortSocket
 import signal
 import logging
 
+##Program argument parsing.
+# @returns (argparse.Namespace) program arguments
 def parse_args():
     """Parse program argument."""
 
@@ -103,6 +105,11 @@ def parse_args():
     args.log_level = constants._LOGGING_MAP[args.log_level]
     return args
 
+##Create FileSenderSockets equal to the number of connections
+#specificied in argument.
+# @param s (OpenListeningPortSocket) OpenListeningPortSocket object
+# @param number_of_connections (int) number of FileSenderSockets to open
+# @param filename (string) filename to send
 def connect_to_listening_sockets(s, number_of_connections, filename):
     for i in range(number_of_connections):
         FileSenderSocket(
@@ -114,6 +121,7 @@ def connect_to_listening_sockets(s, number_of_connections, filename):
             connect_address=(s._s.getsockname()[0], s._port),
         )
 
+##Main program function
 def main():
     args = parse_args()
     util.init_log(args.log, args.log_level)

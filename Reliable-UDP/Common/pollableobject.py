@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.pollableobject
-## @file pollableobject.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.pollableobject
+## @package Reliable-UDP.Common.pollableobject
+## @file pollableobject.py Implementation of @ref Reliable-UDP.Common.pollableobject
 
 
 import asyncio

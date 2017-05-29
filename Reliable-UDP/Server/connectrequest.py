@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.connectrequest
-## @file connectrequest.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.connectrequest
+## @package Reliable-UDP.Server.connectrequest
+## @file connectrequest.py Implementation of @ref Reliable-UDP.Server.connectrequest
 
 from controlrequest import ControlRequest
 import controlserver

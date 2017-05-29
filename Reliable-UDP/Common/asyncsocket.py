@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Common.asyncsocket
-## @file asyncsocket.py Implementation of @ref Reliable-UDP.Reliable-UDP.Common.asyncsocket
+## @package Reliable-UDP.Common.asyncsocket
+## @file asyncsocket.py Implementation of @ref Reliable-UDP.Common.asyncsocket
 
 from pollableobject import PollableObject
 import socket

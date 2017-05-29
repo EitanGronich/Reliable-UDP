@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.controlrequest
-## @file controlrequest.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.controlrequest
+## @package Reliable-UDP.Server.controlrequest
+## @file controlrequest.py Implementation of @ref Reliable-UDP.Server.controlrequest
 
 import controlserver
 from ..Common import constants

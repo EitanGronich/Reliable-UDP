@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-## @package Reliable-UDP.Reliable-UDP.Server.rudpmanager
-## @file rudpmanager.py Implementation of @ref Reliable-UDP.Reliable-UDP.Server.rudpmanager
+## @package Reliable-UDP.Server.rudpmanager
+## @file rudpmanager.py Implementation of @ref Reliable-UDP.Server.rudpmanager
 
 from ..Common import asyncio
 import errno
@@ -19,6 +19,12 @@ import logging
 #
 class RUDPManager(AsyncSocket):
 
+    ##Init RUDP Manager
+    # @param async_manager (Poller) Poller object
+    # @param bind_address (tuple) Bind address of UDP socket
+    # @param timeout (int) Preferred timeout in milliseconds
+    # @param random_drop (int) Percentage chance of dropping a packet
+    # @returns (RUDPManager) RUDPManager object
     def __init__(
         self,
         async_manager,
@@ -47,6 +53,7 @@ class RUDPManager(AsyncSocket):
         ##List of all queued datagrams waiting for send
         self._queued_datagrams = []
 
+    ##Receive read event and apply accoring logic.
     def read(self):
         try:
             string, address = self._s.recvfrom(constants._MAX_RUDP_SIZE)
@@ -117,9 +124,14 @@ class RUDPManager(AsyncSocket):
                 raise
 
 
+    ##Queue a datagram for sending
+    # @param connection (RUDPConnection) RUDP Connection that's queueing the datagram
+    # @param datagram_str (string) Datagram in string form
+    # @param datagram_dict (dict) Datagram in dict form
     def queue_datagram(self, connection, datagram_str, datagram_dict):
         self._queued_datagrams.append((connection, datagram_str, datagram_dict))
 
+    ##Receive write event and apply according logic.
     def write(self):
         try:
             while self._queued_datagrams:
@@ -134,6 +146,9 @@ class RUDPManager(AsyncSocket):
             if e.errno not in (errno.EWOULDBLOCK, errno.EAGAIN):
                 raise
 
+    ##Parse received datagram
+    # @param datagram (string) Datagram in string form
+    # @returns (dict) Datagram in dict form
     def parse_datagram(self, datagram):
         d = {}
         for component in RUDPConnection._COMPONENTS:
@@ -143,6 +158,12 @@ class RUDPManager(AsyncSocket):
             datagram = datagram[RUDPConnection._LENGTHS[component]:]
         return d
 
+    ##Init connection with remote server by creating Connection object.
+    # @param rudp_exit (tuple) Exit server address
+    # @param initiator (tuple) Address of initiator user
+    # @param endpoint (tuple) Address of endpoint user
+    # @param data_socket (DataSocket) DataSocket object connected to
+    # initiator user of connection
     def init_connection(self, rudp_exit, initiator, endpoint, data_socket):
         if rudp_exit not in self._connections_by_rudp_server:
             self._connections_by_rudp_server[rudp_exit] = {}
@@ -184,24 +205,32 @@ class RUDPManager(AsyncSocket):
                 logging.warning("%s: Maximum number of connections with RUDP server %s reached, accepting no more connections." % (self, rudp_exit))
             return new_connection
 
-
+    ##Finds the lowest available CID between the server and another RUDP server.
+    # @param rudp_exit (tuple) Exit server address
+    # @returns (int) CID
     def find_cid(self, rudp_exit):
         for i in range(constants._MAX_CONNECTIONS):
             if i not in self._connections_by_rudp_server[rudp_exit]:
                 return i
 
+    ##Registers connection to the existing data structures.
+    # @param connection (RUDPConnection) RUDPConnection object.
+    # @param rudp_exit (tuple) Exit server address
+    # @param cid (int) Connection ID between the two servers
     def register_connection(self, connection, rudp_exit, cid):
         self._connections.append(connection)
         self._connections_by_rudp_server[rudp_exit][cid] = connection
 
+    ##Gets the foremost datagram in the queue for sending.
+    # @returns (tuple) Datagram tuple consisting of (connection,
+    #datagram_str ,datagram_dict)
     def get_datagram_for_send(self):
-        '''
-            Returns datagram for sending.
-        '''
         d = self._queued_datagrams[0]
         self._queued_datagrams = self._queued_datagrams[1:]
         return d
 
+    #Returns the preferred sleep time of the RUDP Manager.
+    # @returns (int) timeout in milliseconds
     def get_sleep_time(self):
         if self._connections:
             return min(
@@ -210,6 +239,8 @@ class RUDPManager(AsyncSocket):
         else:
             return self._timeout
 
+    #Calculates and returns the IO mask for the RUDP Manager.
+    # @returns (int) IO mask.
     def get_io_mask(self):
         mask = asyncio.BaseEvent.POLLERR
         if not self._closing:
@@ -218,9 +249,7 @@ class RUDPManager(AsyncSocket):
             mask |= asyncio.BaseEvent.POLLOUT
         return mask
 
-    def is_alive(self):
-        return True
-
+    ##Updates the RUDPManager by updating all RUDPConnection
     def update(self):
         for c in self._connections:
             c.update()
@@ -233,11 +262,14 @@ class RUDPManager(AsyncSocket):
         ):
             self.terminate()
 
+    ##Terminates the RUDP Manager completely.
     def terminate(self):
         for c in self._connections:
             self.close_connection(c)
         super(RUDPManager, self).terminate()
 
+    ##Close connection.
+    # @param connection (RUDPConnection) Connection going to be closed
     def close_connection(self, connection):
         logging.info(
             "%s: Connection %s, %s closed" % (self, connection._rudp_peer, connection._cid)
@@ -253,6 +285,7 @@ class RUDPManager(AsyncSocket):
         except (ValueError, KeyError):
             pass
 
+    ##Start clean closing sequence
     def init_close(self):
         self._closing = True
         for c in self._connections:
