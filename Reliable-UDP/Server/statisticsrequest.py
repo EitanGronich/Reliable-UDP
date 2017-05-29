@@ -1,6 +1,7 @@
 from controlrequest import ControlRequest
 import controlserver
 from ..Common import util, constants
+from rudpmanager import RUDPManager
 
 class StatisticsRequest(ControlRequest):
 
@@ -17,11 +18,19 @@ class StatisticsRequest(ControlRequest):
         "number_of_connections",
         "bytes_sent",
         "bytes_received",
+        "remote_user",
+        "connected_user",
+        "sequence_number",
+        "peer_sequence_number",
     )
 
     _CONNECTION_SPECIFIC = (
         "bytes_sent",
         "bytes_received",
+        "remote_user",
+        "connected_user",
+        "sequence_number",
+        "peer_sequence_number",
     )
 
     _GENERAL = (
@@ -35,12 +44,24 @@ class StatisticsRequest(ControlRequest):
 
     def prepare_response(self):
         self.check_headers()
-        if self._headers_in["info"] == "number_of_connections":
+        info = self._headers_in["info"]
+        if info == "number_of_connections":
             self._headers_out["number_of_connections"] = len(self._control_socket._rudp_manager._connections)
-        elif self._headers_in["info"] == "bytes_sent":
-            self._headers_out["bytes_sent"] = self._control_socket._rudp_manager._connections_by_rudp_server[
-                (self._headers_in["rudp_address"], self._headers_in["rudp_port"])
-            ][self._headers_in["cid"]]._bytes_sent
+        else:
+            exit_addr = self._headers_in["rudp_address"], self._headers_in["rudp_port"]
+            cid = self._headers_in["cid"]
+            if info == "bytes_sent":
+                self._headers_out["bytes_sent"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._bytes_sent
+            elif info == "bytes_received":
+                self._headers_out["bytes_received"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._bytes_received
+            elif info == "remote_user":
+                self._headers_out["remote_user"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._remote_user
+            elif info == "connected_user":
+                self._headers_out["connected_user"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._close_user
+            elif info == "sequence_number":
+                self._headers_out["sequence_number"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._sequence_num
+            elif info == "peer_sequence_number":
+                self._headers_out["peer_sequence_number"] = self._control_socket._rudp_manager._connections_by_rudp_server[exit_addr][cid]._peer_sequence_num
         return super(StatisticsRequest, self).prepare_response()
 
     def check_headers(self):

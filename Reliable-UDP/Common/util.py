@@ -6,6 +6,7 @@ import socket
 import errno
 import constants
 import logging
+import signal
 
 def check_tcp_address(address):
     addr, port = address
@@ -80,3 +81,29 @@ def split_buffer(buffer, sep):
         return (None, buffer)
     else:
         return (buffer[:i], buffer[(i+len(sep)):])
+
+def daemon():
+    import resource
+    child = os.fork()
+    if child != 0:
+        os._exit(0)
+    for i in range(
+        constants._STD_ERR + 1,
+        resource.getrlimit(
+            resource.RLIMIT_NOFILE
+        )[1]
+    ):
+        try:
+            os.close(i)
+        except OSError as e:
+            if e.errno != errno.EBADF:
+                raise
+    fd = os.open(os.devnull, os.O_RDWR, 0o666)
+    for i in (constants._STD_IN, constants._STD_OUT, constants._STD_ERR):
+        os.dup2(
+            i,
+            fd
+        )
+    os.close(fd)
+    os.chdir("/")
+    signal.signal(signal.SIGHUP, signal.SIG_IGN)

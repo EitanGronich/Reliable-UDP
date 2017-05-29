@@ -13,10 +13,11 @@ class RUDPConnection(object):
         _INIT_ANSWERER,
         _INIT_INITIATOR,
         _WAITING_FOR_INIT_ACK,
-        _WAITING_CONNECTION_APPROVAL,
+        _WAITING_CONNECT_STATUS,
+        _WAITING_REMOTE_CONNECTION_APPROVAL,
         _WAITING_FOR_ACK,
         _READY_FOR_SEND,
-    ) = range(6)
+    ) = range(7)
     _COMPONENTS = (
         _FLAG,
         _SQN_NUM,
@@ -113,6 +114,7 @@ class RUDPConnection(object):
                 connect_address=self._close_user,
                 connection=self,
             )
+            self._connection_state = RUDPConnection._WAITING_CONNECT_STATUS
         except IOError:
             logging.error(
                 "%s: Failed to initalize connection:\n%s" % (self, traceback.format_exc())
@@ -127,7 +129,7 @@ class RUDPConnection(object):
     def receive_ack(self, d):
         if d[RUDPConnection._SQN_NUM] == self._sequence_num:
             if self._connection_state == RUDPConnection._WAITING_FOR_INIT_ACK:
-                self._connection_state = RUDPConnection._WAITING_CONNECTION_APPROVAL
+                self._connection_state = RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL
                 self._time_give_up_connection_approval = datetime.now() + timedelta(microseconds=self._connection_approval_interval * 1000)
                 logging.info(
                     "%s: Received init ack" % self
@@ -139,7 +141,7 @@ class RUDPConnection(object):
                     )
                 )
             else:
-                if self._connection_state == RUDPConnection._WAITING_CONNECTION_APPROVAL:
+                if self._connection_state == RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL:
                     logging.info(
                         "%s: Connection to remote user successful, allowing user at %s to send and receive" %(
                             self,
@@ -206,6 +208,7 @@ class RUDPConnection(object):
                 self._rudp_peer,
             )
         )
+        self._connection_state = RUDPConnection._READY_FOR_SEND
         self.queue_ack()
 
     def parse_init_data(self, data):
@@ -231,7 +234,7 @@ class RUDPConnection(object):
         return d
 
     def queue_datagram(self, flag, sqn_num, data, retry=False):
-        content = "%04x%01x%02x%s" %(
+        content = "%04x%01x%04x%s" %(
                     self._cid,
                     flag,
                     sqn_num,

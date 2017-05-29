@@ -10,11 +10,11 @@ _LOGGING_MAP = {
 _KEEP_ALIVE_INTERVAL = 20000 #milliseconds
 _RETRY_INTERVAL = 5000
 _CONNECTION_APPROVAL_INTERVAL = 10000
-_RETRY_COUNT = 5
+_RETRY_COUNT = 15
 _LENGTH_LENGTH = 4
 _CID_LENGTH = 4
 _FLAG_LENGTH = 1
-_SQN_LENGTH = 2
+_SQN_LENGTH = 4
 _DATA_LENGTH = 1024
 _MAX_INIT_LENGTH = 43
 _HTTP_PORT = 80
@@ -54,7 +54,9 @@ _CONTENT_TYPES = {
     '.txt': 'text/plain',
     '.ico': 'image/x-icon',
 }
+_STD_IN = 0
 _STD_OUT = 1
+_STD_ERR = 2
 _FORM_HTML = """
 <html>
     <head>

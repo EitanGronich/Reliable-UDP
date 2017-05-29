@@ -31,9 +31,6 @@
   color: gray;
   font-size: 0.8em;
 }
-.table-connections{
-  border-radius: 10px;
-}
 .table-data{
   font-size: 0.9em;
 }
@@ -46,6 +43,9 @@
 .connection-table-heading{
   vertical-align: top;
   background-color:#E3F2FD;
+}
+.table>thead>tr>th {
+  vertical-align: top;
 }
 .refresh-button:hover{
   text-decoration: none;

@@ -20,12 +20,6 @@ class FileService(HTTPService):
                 self._parsedurl.path[1:],
             )
         )
-
-        """if self._filename[:len(constants._BASE_DIRECTORY) + 1] != os.path.join(
-                constants._BASE_DIRECTORY,
-                '',
-        ):
-            raise RuntimeError("Malicious URI '%s'" % self._parsedurl.path)"""
         try:
             self._fd = os.open(
                 self._filename,

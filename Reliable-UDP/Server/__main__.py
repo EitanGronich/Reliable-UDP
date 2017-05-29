@@ -47,6 +47,12 @@ def parse_args():
         choices=constants._LOGGING_MAP.keys()
     )
     parser.add_argument(
+        '--daemon',
+        help="Turn server into daemon process",
+        action='store_true',
+        default=False,
+    )
+    parser.add_argument(
         '--poller-type',
         default=asyncio.default_poller_type(),
         choices=tuple(asyncio.MAP.keys()),
@@ -58,10 +64,12 @@ def parse_args():
 
 def __main__():
     args = parse_args()
+    if args.daemon:
+        util.daemon()
     util.init_log(args.log, args.log_level)
 
     try:
-        async_manager = asyncio.AsyncIO(
+        async_manager = asyncio.Poller(
             type=args.poller_class,
             timeout=constants._TIMEOUT,
         )

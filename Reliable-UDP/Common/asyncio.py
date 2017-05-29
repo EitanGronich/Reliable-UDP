@@ -95,7 +95,7 @@ def default_poller_type():
         return 'poll'
 
 
-class AsyncIO(object):
+class Poller(object):
 
     def __init__(
         self,

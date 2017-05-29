@@ -54,7 +54,7 @@ class DataSocket(TCPServerSocket):
         if self._connection._connection_state not in (
             rudpconnection.RUDPConnection._WAITING_FOR_ACK,
             rudpconnection.RUDPConnection._WAITING_FOR_INIT_ACK,
-            rudpconnection.RUDPConnection._WAITING_CONNECTION_APPROVAL,
+            rudpconnection.RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL,
         ):
             self._connection.queue_buffer(self._recv_buff)
             self._recv_buff = ""
@@ -72,7 +72,7 @@ class DataSocket(TCPServerSocket):
             and self._connection._connection_state not in (
                 rudpconnection.RUDPConnection._WAITING_FOR_ACK,
                 rudpconnection.RUDPConnection._WAITING_FOR_INIT_ACK,
-                rudpconnection.RUDPConnection._WAITING_CONNECTION_APPROVAL,
+                rudpconnection.RUDPConnection._WAITING_REMOTE_CONNECTION_APPROVAL,
             )
         )
 

@@ -45,7 +45,7 @@ def main():
     util.init_log(args.log, args.log_level)
 
     try:
-        async_manager = asyncio.AsyncIO(
+        async_manager = asyncio.Poller(
             type=args.poller_class,
             timeout=constants._TIMEOUT,
         )
