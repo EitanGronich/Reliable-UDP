@@ -1,8 +1,0 @@
-var searchData=
-[
-  ['tcpserver_2epy',['tcpserver.py',['../de/d26/tcpserver_8py.html',1,'']]],
-  ['tcpserverlistener',['TCPServerListener',['../da/d24/classReliable-UDP_1_1Common_1_1tcpserver_1_1TCPServerListener.html',1,'Reliable-UDP::Common::tcpserver']]],
-  ['tcpserversocket',['TCPServerSocket',['../db/d9b/classReliable-UDP_1_1Common_1_1tcpserver_1_1TCPServerSocket.html',1,'Reliable-UDP::Common::tcpserver']]],
-  ['terminate',['terminate',['../db/dc4/classReliable-UDP_1_1Common_1_1asyncio_1_1Poller.html#ad80f4d3f36b5c6cb0bdc6bc55b3114f7',1,'Reliable-UDP.Common.asyncio.Poller.terminate()'],['../d8/d31/classReliable-UDP_1_1Common_1_1asyncsocket_1_1AsyncSocket.html#af0d8024a0195b44fbba6fd3e8ab9ba06',1,'Reliable-UDP.Common.asyncsocket.AsyncSocket.terminate()'],['../d9/da4/classReliable-UDP_1_1Common_1_1pollableobject_1_1PollableObject.html#a91e2d30fd2bd3378119d0fdfc379e447',1,'Reliable-UDP.Common.pollableobject.PollableObject.terminate()'],['../d2/d52/classReliable-UDP_1_1Server_1_1dataserver_1_1DataSocket.html#a184325d234af5351b8932aa87950631a',1,'Reliable-UDP.Server.dataserver.DataSocket.terminate()'],['../de/d73/classReliable-UDP_1_1Server_1_1rudpmanager_1_1RUDPManager.html#ab333c697ceebf0c6ad20d260101a45e4',1,'Reliable-UDP.Server.rudpmanager.RUDPManager.terminate()'],['../da/dde/classReliable-UDP_1_1Test__Async_1_1Sender_1_1filesendersocket_1_1FileSenderSocket.html#aabcfe9c9880d42a9c44561b7c8342827',1,'Reliable-UDP.Test_Async.Sender.filesendersocket.FileSenderSocket.terminate()']]],
-  ['timeout',['timeout',['../d9/da4/classReliable-UDP_1_1Common_1_1pollableobject_1_1PollableObject.html#a315585819e27cde7f76152e83fdfd1d9',1,'Reliable-UDP::Common::pollableobject::PollableObject']]]
-];
