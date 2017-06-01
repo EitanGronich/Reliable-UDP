@@ -60,7 +60,9 @@ class ConnectRequest(ControlRequest):
         ttl = self._headers_in["ttl"] = util.str_to_float(self._headers_in["ttl"])
         exit_port = self._headers_in["exit_port"] = util.str_to_int(self._headers_in["exit_port"])
         dest_port = self._headers_in["dest_port"] = util.str_to_int(self._headers_in["dest_port"])
+        print self._headers_in["if_exists"]
         if_exists = self._headers_in["if_exists"] = util.str_to_int(self._headers_in["if_exists"])
+        print self._headers_in["if_exists"]
         if any(
             [
                 a is None for a in (
@@ -68,9 +70,6 @@ class ConnectRequest(ControlRequest):
                     exit_port,
                     dest_port,
                     if_exists,
-                    util.check_tcp_address(
-                        (self._headers_in["exit_address"], exit_port)
-                    ),
                     util.check_tcp_port(
                         dest_port
                     ),
