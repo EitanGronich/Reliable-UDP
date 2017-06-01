@@ -423,8 +423,6 @@ class RUDPConnection(object):
                 )
             if d[RUDPConnection._FLAG] not in (RUDPConnection._FLAG_ACK, RUDPConnection._FLAG_CLOSE):
                 self.queue_ack()
-            if d[RUDPConnection._FLAG] == RUDPConnection._FLAG_INIT:
-                    self.queue_ack()
 
     ##Start the connection sequence with a remote server.
     def connect_to_remote(self):
