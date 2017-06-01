@@ -6,6 +6,7 @@
 from datetime import datetime, timedelta
 from dataserver import DataSocket
 import random
+import socket
 from ..Common import util
 from ..Common import constants
 import traceback
@@ -99,8 +100,10 @@ class RUDPConnection(object):
         assert state in (RUDPConnection._INIT_INITIATOR, RUDPConnection._INIT_ANSWERER)
         ##Connection state
         self._connection_state = state
+        self._rudp_peer_addr, self._rudp_peer_port = rudp_peer_address
+        self._rudp_peer_addr = socket.gethostbyname(self._rudp_peer_addr)
         ##Address of remote RUDP server
-        self._rudp_peer = socket.gethostbyname(self._rudp_peer_addr), self._rudp_peer_port = rudp_peer_address
+        self._rudp_peer = self._rudp_peer_addr, self._rudp_peer_port
         ##RUDP Manager object
         self._rudp_manager = rudp_manager
         ##Async manager object (Poller)
