@@ -100,7 +100,7 @@ class RUDPConnection(object):
         ##Connection state
         self._connection_state = state
         ##Address of remote RUDP server
-        self._rudp_peer = self._rudp_peer_addr, self._rudp_peer_port = rudp_peer_address
+        self._rudp_peer = socket.gethostbyname(self._rudp_peer_addr), self._rudp_peer_port = rudp_peer_address
         ##RUDP Manager object
         self._rudp_manager = rudp_manager
         ##Async manager object (Poller)
