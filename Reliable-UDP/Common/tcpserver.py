@@ -242,7 +242,19 @@ class TCPServerListener(AsyncSocket):
             type=socket.SOCK_STREAM,
         )
         s.setblocking(0)
-        s.bind(bind_address)
+        try:
+            s.bind(bind_address)
+        except IOError as e:
+            if e.errno != errno.EADDRINUSE:
+                raise
+            addr, port = bind_address
+            s.bind((addr, 0))
+            logging.warning(
+                "Given bind address (%s) not available, binded to %s" % (
+                    port,
+                    s.getsockname()[1]
+                )
+            )
         s.listen(10)
         super(TCPServerListener, self).__init__(
             async_manager=async_manager,

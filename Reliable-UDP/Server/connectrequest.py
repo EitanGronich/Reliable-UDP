@@ -38,7 +38,7 @@ class ConnectRequest(ControlRequest):
     ##Prepares response for send.
     # @returns (bool) finished preparing or not
     def prepare_response(self):
-        if "if_exists" not in self._headers_in:
+        if self._headers_in["if_exists"] == '':
             self._headers_in["if_exists"] = "0"
         self.check_headers()
         dl = DataListener(
