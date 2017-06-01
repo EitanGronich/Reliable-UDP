@@ -215,11 +215,10 @@ class RUDPManager(AsyncSocket):
 
     ##Registers connection to the existing data structures.
     # @param connection (RUDPConnection) RUDPConnection object.
-    # @param rudp_exit (tuple) Exit server address
     # @param cid (int) Connection ID between the two servers
-    def register_connection(self, connection, rudp_exit, cid):
+    def register_connection(self, connection, cid):
         self._connections.append(connection)
-        self._connections_by_rudp_server[rudp_exit][cid] = connection
+        self._connections_by_rudp_server[connection._rudp_peer][cid] = connection
 
     ##Gets the foremost datagram in the queue for sending.
     # @returns (tuple) Datagram tuple consisting of (connection,
