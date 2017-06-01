@@ -165,7 +165,9 @@ class RUDPManager(AsyncSocket):
     # @param data_socket (DataSocket) DataSocket object connected to
     # initiator user of connection
     def init_connection(self, rudp_exit, initiator, endpoint, data_socket):
-        rudp_exit = socket.gethostbyname(rudp_exit)
+        addr, port = rudp_exit
+        addr = socket.gethostbyname(rudp_exit)
+        rudp_exit = addr, port
         if rudp_exit not in self._connections_by_rudp_server:
             self._connections_by_rudp_server[rudp_exit] = {}
         cid = self.find_cid(rudp_exit)
