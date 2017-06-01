@@ -114,7 +114,7 @@ class RUDPManager(AsyncSocket):
                             connection_approval_interval=constants._CONNECTION_APPROVAL_INTERVAL,
                             retry_count=constants._RETRY_COUNT,
                         )
-                        self.register_connection(new_connection, address, d[RUDPConnection._CID])
+                        self.register_connection(new_connection, d[RUDPConnection._CID])
                 if valid:
                     self._connections_by_rudp_server[address][d[RUDPConnection._CID]].receive_datagram(
                         d
@@ -199,7 +199,7 @@ class RUDPManager(AsyncSocket):
                 endpoint=endpoint,
                 data_socket=data_socket,
             )
-            self.register_connection(new_connection, rudp_exit, cid)
+            self.register_connection(new_connection, cid)
             new_connection.connect_to_remote()
             if len(self._connections_by_rudp_server[rudp_exit].keys()) == constants._MAX_CONNECTIONS:
                 logging.warning("%s: Maximum number of connections with RUDP server %s reached, accepting no more connections." % (self, rudp_exit))
