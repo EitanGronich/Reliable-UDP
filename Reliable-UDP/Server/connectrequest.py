@@ -23,6 +23,7 @@ class ConnectRequest(ControlRequest):
         "exit_port",
         "dest_address",
         "dest_port",
+        "if_exists",
         "ttl",
     )
 
@@ -37,10 +38,12 @@ class ConnectRequest(ControlRequest):
     ##Prepares response for send.
     # @returns (bool) finished preparing or not
     def prepare_response(self):
+        if "if_exists" not in self._headers_in:
+            self._headers_in["if_exists"] = "0"
         self.check_headers()
         dl = DataListener(
             async_manager=self._control_socket._async_manager,
-            bind_address=("0.0.0.0", 0),
+            bind_address=("0.0.0.0", self._headers_in["if_exists"]),
             exit_address=(self._headers_in["exit_address"], self._headers_in["exit_port"]),
             dest_address=(self._headers_in["dest_address"], self._headers_in["dest_port"]),
             rudp_manager=self._control_socket._rudp_manager,
@@ -57,12 +60,14 @@ class ConnectRequest(ControlRequest):
         ttl = self._headers_in["ttl"] = util.str_to_float(self._headers_in["ttl"])
         exit_port = self._headers_in["exit_port"] = util.str_to_int(self._headers_in["exit_port"])
         dest_port = self._headers_in["dest_port"] = util.str_to_int(self._headers_in["dest_port"])
+        if_exists = self._headers_in["if_exists"] = util.str_to_int(self._headers_in["if_exists"])
         if any(
             [
                 a is None for a in (
                     ttl,
                     exit_port,
                     dest_port,
+                    if_exists,
                     util.check_tcp_address(
                         (self._headers_in["exit_address"], exit_port)
                     ),

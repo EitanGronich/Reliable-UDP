@@ -47,6 +47,11 @@ def parse_args():
         required=True,
     )
     parser.add_argument(
+        '--preferred-port',
+        type=int,
+        help="Preferred port, will return this port if it exists",
+    )
+    parser.add_argument(
         '--block-size',
         type=int,
         help="Size of reading block",
@@ -68,14 +73,24 @@ def main():
             "exit_port=%s\n"
             "dest_address=%s\n"
             "dest_port=%s\n"
-            "ttl=0\n"
-            "\n"
-        ) % (
-            args.exit_server_address,
-            args.exit_server_port,
-            args.destination_address,
-            args.destination_port,
+            "ttl=0\n" % (
+                args.exit_server_address,
+                args.exit_server_port,
+                args.destination_address,
+                args.destination_port,
+            )
         )
+    )
+    if args.preferred_port:
+        util.send_all(
+            s,
+            (
+                "if_exists=%s\n" % args.preferred_port
+            )
+        )
+    util.send_all(
+        s,
+        "\n"
     )
     buf = ""
     END = "%s%s" % (constants._LF, constants._LF)
