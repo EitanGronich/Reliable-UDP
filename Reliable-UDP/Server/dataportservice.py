@@ -40,9 +40,6 @@ class DataPortService(HTTPService):
                     ttl,
                     exit_port,
                     dest_port,
-                    util.check_tcp_address(
-                        (self._qs["exit_address"][0], exit_port)
-                    ),
                 )
             ]
         ):

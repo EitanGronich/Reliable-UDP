@@ -10,6 +10,7 @@ import urlparse
 from fileservice import FileService
 from dataportservice import DataPortService
 from connectionsservice import ConnectionsService
+from blankservice import BlankService
 from ..Common import constants
 import logging
 
@@ -75,6 +76,7 @@ class HTTPSocket(TCPServerSocket):
     #but are incorporated into "None" category
     _SERVICES = {
         None: FileService,
+        "/": BlankService,
         "/return_port": DataPortService,
         "/connections": ConnectionsService,
     }
@@ -197,20 +199,26 @@ class HTTPSocket(TCPServerSocket):
     # @param content_type (string) Content-Type
     # @param content_length (int) Content-Length
     # @param headers (dict) HTTP headers
-    def send_headers(self, code, message, content_type, content_length, headers):
+    def send_headers(self, code, message, headers, content_type=None, content_length=0):
         self.queue_buffer(
-            (
-                '%s %s %s\r\n'
-                'Content-Type: %s\r\n'
-                'Content-Length: %s\r\n'
-            ) % (
+            '%s %s %s\r\n' % (
                 constants._HTTP_SIGNATURE,
                 code,
                 message,
-                content_type,
-                content_length,
             )
         )
+        logging.info("%s" % content_type)
+        logging.info("%s" % content_length)
+        if content_length != 0:
+            self.queue_buffer(
+                (
+                    'Content-Type: %s\r\n'
+                    'Content-Length: %s\r\n'
+                ) % (
+                    content_type,
+                    content_length,
+                )
+            )
         for k, v in headers.items():
             self.queue_buffer(
                 '%s: %s\r\n' % (

@@ -88,6 +88,10 @@ _HTTP_FILE_NOT_FOUND = 404
 _HTTP_OK_CODE = 200
 ##HTTP "Request is OK" Message
 _HTTP_OK_MESSAGE = "OK"
+##HTTP "Redirect" code
+_HTTP_REDIRECT = 301
+##HTTP "Redirect" Message
+_HTTP_REDIRECT_MESSAGE = "Moved Permanently"
 ##Base directory for files
 _BASE_DIRECTORY = "."
 ##Minimum Port possible in TCP
